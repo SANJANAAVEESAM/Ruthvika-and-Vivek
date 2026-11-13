@@ -100,8 +100,8 @@ export type JoinStyle =
   | "current" | "card" | "tiles" | "ring" | "band" | "flip" | "dials" | "telugu" | "sentence"
   | "hairline" | "roman" | "editorial" | "engraved";
 
-/** The wedding span as "22 — 26 November 2026", for the small-caps treatments. */
-const SPAN_CAPS = `22 — 26 November ${WEDDING_YEAR}`;
+/** The span of celebrations, "22 — 29 November 2026", for the small-caps treatments. */
+const SPAN_CAPS = `22 — 29 November ${WEDDING_YEAR}`;
 
 /** The four new treatments of the invitation line, date and countdown. */
 function JoinBody({ variant }: { variant: Exclude<JoinStyle, "current"> }) {

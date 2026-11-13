@@ -15,7 +15,7 @@ const IST = (month: number, day: number, hour: number, minute: number) =>
 /** Marriage — Thursday 26 November, 9:15 AM IST. */
 export const WEDDING_DATE = IST(10, 26, 9, 15);
 
-export const WEDDING_DATE_RANGE = `November 22–26, ${WEDDING_YEAR}`;
+export const WEDDING_DATE_RANGE = `November 22–29, ${WEDDING_YEAR}`;
 
 /** Sunny — where the RSVP's WhatsApp backup goes if saving ever fails. */
 export const WHATSAPP_NUMBER = "917036884774";
@@ -250,6 +250,25 @@ export const EVENT_DAYS: EventDay[] = [
       },
     ],
   },
+  {
+    date: "29 November",
+    weekday: "Sunday",
+    events: [
+      {
+        slug: "reception",
+        name: "Reception",
+        themeKey: "masquerade",
+        time: "6:00 PM",
+        venue: {
+          name: "D-Convention Hall",
+          address: "Hunter Road, Warangal",
+          mapsQuery: "D-Convention Hall, Hunter Road, Warangal",
+        },
+        start: IST(10, 29, 18, 0),
+        end: IST(10, 29, 22, 0),
+      },
+    ],
+  },
 ];
 
 /** Directions link, or null while the venue is still unconfirmed. */
@@ -265,10 +284,10 @@ export const EVENTS: WeddingEvent[] = EVENT_DAYS.flatMap((day) => day.events);
 
 export const FULL_WEDDING_CAL = {
   title: `${COUPLE.bride} & ${COUPLE.groom} — Wedding Celebrations`,
-  description: `Celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Marriage on 26 November at 9:15 AM IST, Jogulamba Ammavari Temple, Alampur.`,
+  description: `Celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Marriage on 26 November at 9:15 AM IST, Jogulamba Ammavari Temple, Alampur. Reception on 29 November at 6:00 PM, D-Convention Hall, Hunter Road, Warangal.`,
   location: "Telangana, India",
   startUtc: IST(10, 22, 11, 0).toISOString(),
-  endUtc: IST(10, 26, 13, 0).toISOString(),
+  endUtc: IST(10, 29, 22, 0).toISOString(),
 };
 
 export type DetailIcon = "bed" | "plane" | "camera" | "pin" | "live";

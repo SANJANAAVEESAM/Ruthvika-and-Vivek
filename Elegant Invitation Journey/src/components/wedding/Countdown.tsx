@@ -81,7 +81,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
               boxShadow: "0 8px 18px -12px color-mix(in oklab, var(--bronze) 70%, transparent)",
             }}
           >
-            <span className="font-display text-[1.9rem] leading-none text-ink-strong tabular-nums">{two(t?.[k])}</span>
+            <span className="font-display text-[1.9rem] leading-none text-ink-strong lining-nums tabular-nums">{two(t?.[k])}</span>
             <span className="mt-1.5 font-body text-[0.44rem] font-semibold tracking-[0.22em] uppercase text-bronze-deep">
               {k}
             </span>
@@ -102,14 +102,14 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
               "0 0 0 1px color-mix(in oklab, var(--gold) 80%, transparent), 0 0 0 6px color-mix(in oklab, var(--pearl) 70%, transparent), 0 0 0 7px color-mix(in oklab, var(--gold) 45%, transparent), 0 16px 30px -18px oklch(0.3 0.04 20 / 0.5)",
           }}
         >
-          <span className="font-display text-[3.4rem] leading-none font-light text-bronze-deep tabular-nums">
+          <span className="font-display text-[3.4rem] leading-none font-light text-bronze-deep lining-nums tabular-nums">
             {t ? t.Days : "--"}
           </span>
           <span className="mt-1 font-body text-[0.5rem] font-semibold tracking-[0.3em] uppercase text-muted-foreground">
             days to go
           </span>
         </div>
-        <p className="mt-5 font-display text-[1.15rem] text-ink-strong tabular-nums">
+        <p className="mt-5 font-display text-[1.15rem] text-ink-strong lining-nums tabular-nums">
           {two(t?.Hours)}
           <span className="mx-1 font-body text-[0.55rem] tracking-[0.2em] text-muted-foreground uppercase">h</span>
           {two(t?.Minutes)}
@@ -131,7 +131,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
             className="flex w-[4.4rem] flex-col items-center py-1"
             style={{ borderLeft: i === 0 ? "none" : "1px solid color-mix(in oklab, var(--gold) 55%, transparent)" }}
           >
-            <span className="font-display text-[2.6rem] leading-none font-light text-ink-strong tabular-nums">{two(t?.[k])}</span>
+            <span className="font-display text-[2.6rem] leading-none font-light text-ink-strong lining-nums tabular-nums">{two(t?.[k])}</span>
             <span className="mt-2.5 font-body text-[0.46rem] font-medium tracking-[0.3em] uppercase text-muted-foreground">{k}</span>
           </div>
         ))}
@@ -160,10 +160,10 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
   if (variant === "editorial") {
     return (
       <div className="text-center">
-        <p className="font-display text-[5.2rem] leading-[0.82] font-light text-bronze-deep tabular-nums">{t ? t.Days : "--"}</p>
+        <p className="font-display text-[5.2rem] leading-[0.82] font-light text-bronze-deep lining-nums tabular-nums">{t ? t.Days : "--"}</p>
         <p className="mt-1.5 font-body text-[0.58rem] font-medium tracking-[0.4em] uppercase text-ink-strong">days to go</p>
         <span aria-hidden="true" className="mx-auto mt-3 mb-2.5 block h-px w-12" style={{ background: "var(--gold)" }} />
-        <p className="font-display text-[1.1rem] leading-tight text-muted-foreground italic tabular-nums">
+        <p className="font-display text-[1.1rem] leading-tight text-muted-foreground italic lining-nums tabular-nums">
           {two(t?.Hours)} hours · {two(t?.Minutes)} minutes · {two(t?.Seconds)} seconds
         </p>
       </div>
@@ -178,7 +178,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
         <div className="flex justify-center gap-4 py-5">
           {UNITS.map((k) => (
             <div key={k} className="flex min-w-[3rem] flex-col items-center">
-              <span className="font-display text-[2.4rem] leading-none font-semibold tabular-nums" style={FOIL_TEXT}>{two(t?.[k])}</span>
+              <span className="font-display text-[2.4rem] leading-none font-semibold lining-nums tabular-nums" style={FOIL_TEXT}>{two(t?.[k])}</span>
               <span className="mt-2 font-display text-[0.82rem] text-muted-foreground italic">{k.toLowerCase()}</span>
             </div>
           ))}
@@ -201,7 +201,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
                 boxShadow: "0 12px 22px -14px oklch(0.3 0.06 10 / 0.7)",
               }}
             >
-              <span className="font-display text-[2.4rem] leading-none text-[oklch(0.98_0.01_40)] tabular-nums">{two(t?.[k])}</span>
+              <span className="font-display text-[2.4rem] leading-none text-[oklch(0.98_0.01_40)] lining-nums tabular-nums">{two(t?.[k])}</span>
               <span aria-hidden="true" className="absolute inset-x-0 top-1/2 h-px" style={{ background: "oklch(0.3 0.05 10 / 0.6)" }} />
               <span aria-hidden="true" className="absolute top-1/2 -left-[3px] size-1.5 -translate-y-1/2 rounded-full" style={{ background: "var(--pearl)" }} />
               <span aria-hidden="true" className="absolute top-1/2 -right-[3px] size-1.5 -translate-y-1/2 rounded-full" style={{ background: "var(--pearl)" }} />
@@ -229,7 +229,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
                   <circle cx="32" cy="32" r={R} fill="color-mix(in oklab, var(--pearl) 80%, transparent)" stroke="color-mix(in oklab, var(--gold) 35%, transparent)" strokeWidth="2" />
                   <circle cx="32" cy="32" r={R} fill="none" stroke="var(--bronze)" strokeWidth="2.6" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - frac)} />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center font-display text-[1.5rem] text-ink-strong tabular-nums">{two(t?.[k])}</span>
+                <span className="absolute inset-0 flex items-center justify-center font-display text-[1.5rem] text-ink-strong lining-nums tabular-nums">{two(t?.[k])}</span>
               </div>
               <span className="mt-2 font-body text-[0.46rem] font-semibold tracking-[0.22em] uppercase text-muted-foreground">{k}</span>
             </div>
@@ -247,7 +247,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
           <div key={k} className="flex items-start">
             {i > 0 && <span className="mx-1 pt-0.5 font-display text-2xl text-[var(--gold)]" aria-hidden="true">:</span>}
             <div className="flex min-w-[3.4rem] flex-col items-center">
-              <span className="font-display text-[2.1rem] leading-none text-foreground tabular-nums">{two(t?.[k])}</span>
+              <span className="font-display text-[2.1rem] leading-none text-foreground lining-nums tabular-nums">{two(t?.[k])}</span>
               <span lang="te" className="mt-1.5 text-[0.8rem] text-bronze-deep" style={{ fontFamily: '"Suravaram", serif', fontWeight: 400 }}>
                 {TELUGU[k]}
               </span>
@@ -290,7 +290,7 @@ export function Countdown({ variant = "plain" }: { variant?: CountdownStyle }) {
           )}
           <div className="flex min-w-[3.2rem] flex-col items-center">
             <span
-              className="font-display text-[2.1rem] leading-none tabular-nums sm:text-4xl"
+              className="font-display text-[2.1rem] leading-none lining-nums tabular-nums sm:text-4xl"
               style={{ color: light ? "oklch(0.98 0.01 40)" : "var(--foreground)" }}
             >
               {two(t?.[k])}

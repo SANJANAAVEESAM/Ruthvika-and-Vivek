@@ -181,6 +181,10 @@
     color: var(--color-foreground);
     font-family: var(--font-body);
     font-weight: 400;
+    /* Cormorant's default figures are old-style: its "1" is drawn like a capital
+       I (so 12 reads "I2" and 11:00 reads "II:00") and its "0" is a tiny "o".
+       Lining figures are the same typeface with plain, full-height numbers. */
+    font-variant-numeric: lining-nums;
   }
 
   h1,
