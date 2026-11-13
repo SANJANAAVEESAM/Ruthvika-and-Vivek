@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { COUPLE } from "./data";
-import { preloadMusic, startMusic } from "@/lib/music";
+import { armMusicTap, preloadMusic, releaseMusicTap, startMusic } from "@/lib/music";
 import backdrop from "@/assets/backdrop-ruthvika-vivek.jpg";
 import viruLogo from "@/assets/viru-logo.png";
 
@@ -22,17 +22,23 @@ export function Envelope({ onOpened }: { onOpened: () => void }) {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  // Get the song's player ready before the tap that has to start it.
-  useEffect(() => {
-    preloadMusic();
-  }, []);
-
   const open = () => {
     if (opening) return;
     setOpening(true);
+    releaseMusicTap();
     startMusic();
     timer.current = window.setTimeout(onOpened, 80);
   };
+
+  // Get the song's player ready before the tap, and let it take that tap: on a
+  // phone only a touch on the player itself can start the sound.
+  const openRef = useRef(open);
+  openRef.current = open;
+  useEffect(() => {
+    preloadMusic();
+    armMusicTap(() => openRef.current());
+    return () => releaseMusicTap();
+  }, []);
 
   return (
     <div

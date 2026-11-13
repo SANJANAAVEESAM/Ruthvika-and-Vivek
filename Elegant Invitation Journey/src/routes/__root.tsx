@@ -154,7 +154,7 @@ function RootComponent() {
             className="h-full w-full object-cover object-center"
             // Strong enough for the couple's faces to read, not so strong that
             // the text laid over the photo loses contrast.
-            style={{ opacity: 0.5 }}
+            style={{ opacity: 0.36 }}
           />
           {/* Warm wash so type stays readable over the busiest parts */}
           <div
@@ -163,7 +163,7 @@ function RootComponent() {
               background:
                 // Lightest across the band where the faces sit, heavier below it
                 // where the clothes are and the text needs the calmer ground.
-                "linear-gradient(180deg, color-mix(in oklab, var(--background) 38%, transparent) 0%, color-mix(in oklab, var(--background) 8%, transparent) 36%, color-mix(in oklab, var(--background) 30%, transparent) 62%, color-mix(in oklab, var(--background) 60%, transparent) 100%)",
+                "linear-gradient(180deg, color-mix(in oklab, var(--background) 52%, transparent) 0%, color-mix(in oklab, var(--background) 24%, transparent) 36%, color-mix(in oklab, var(--background) 44%, transparent) 62%, color-mix(in oklab, var(--background) 70%, transparent) 100%)",
             }}
           />
         </div>

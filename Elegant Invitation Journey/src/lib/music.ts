@@ -34,7 +34,20 @@ type YTPlayer = {
   mute(): void;
   unMute(): void;
 };
+/** The player, parked off to the side at the size YouTube asks for. */
+const HOST_OFF = "position:fixed;left:-320px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;";
+/**
+ * The player laid invisibly over the whole screen. Phones only let audio start
+ * when the finger lands on the player itself — a message sent to it from the
+ * page does not count — so while the entry screen waits, the guest's tap goes
+ * straight to the player, and the invitation opens as the song starts.
+ */
+const HOST_TAP = "position:fixed;inset:0;width:100%;height:100%;opacity:0;z-index:9999;";
+
 let yt: YTPlayer | null = null;
+let ytHost: HTMLElement | null = null;
+let tapCb: (() => void) | null = null;
+let tapFired = false;
 let ytReady = false;
 let ytWanted = false; // the guest has tapped
 let ytPlaying = false;
@@ -72,8 +85,9 @@ export function preloadMusic() {
   void loadYouTubeApi().then(() => {
     if (yt) return;
     const host = document.createElement("div");
-    // Off to the side at the size YouTube asks for, not display:none.
-    host.style.cssText = "position:fixed;left:-320px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;";
+    // Off to the side, not display:none.
+    host.style.cssText = HOST_OFF;
+    ytHost = host;
     const mount = document.createElement("div");
     host.appendChild(mount);
     document.body.appendChild(host);
@@ -81,8 +95,9 @@ export function preloadMusic() {
     const YT = (window as unknown as { YT: { Player: new (el: HTMLElement, opts: unknown) => YTPlayer } }).YT;
     yt = new YT.Player(mount, {
       host: "https://www.youtube-nocookie.com",
-      width: 200,
-      height: 200,
+      // Fill the host, whichever size it is wearing.
+      width: "100%",
+      height: "100%",
       videoId: YT_ID,
       // No loop/playlist here: YouTube's own loop restarts at 0:00 and ignores
       // `start`, so the loop is done below when the song ends.
@@ -90,10 +105,19 @@ export function preloadMusic() {
       events: {
         onReady: () => {
           ytReady = true;
+          // Silent until the fade: a tap on the player starts it at full volume.
+          yt?.setVolume(0);
+          if (muted) yt?.mute();
           if (ytWanted) playYouTube();
+          if (tapCb && !tapFired) enterTapMode();
         },
+        // The video cannot be played here (removed, or embedding switched off):
+        // open the invitation without music rather than leave the guest stuck.
+        onError: () => fireTap(),
         onStateChange: (e: { data: number }) => {
-          // Ended: go round again from 1:37, not from the top.
+          // Buffering or playing means the tap on the player took.
+          if (e.data === 1 || e.data === 3) fireTap();
+          // Ended: go round again from the start point, not from the top.
           if (e.data === 0) {
             yt?.seekTo(YT_START, true);
             yt?.playVideo();
@@ -132,6 +156,43 @@ function startYouTube() {
   ytWanted = true;
   if (yt && ytReady) playYouTube();
   else preloadMusic();
+}
+
+/** Tapping into the player takes focus from the page; treat that as the tap. */
+function onWindowBlur() {
+  // If the player does not report playing (an ad, a slow start), open anyway.
+  if (tapCb && !tapFired) window.setTimeout(fireTap, 1600);
+}
+
+function enterTapMode() {
+  if (!ytHost) return;
+  ytHost.style.cssText = HOST_TAP;
+  window.addEventListener("blur", onWindowBlur);
+}
+
+function fireTap() {
+  if (tapFired || !tapCb) return;
+  tapFired = true;
+  releaseMusicTap();
+  tapCb();
+}
+
+/**
+ * Lets the entry screen hand its first tap to the player. `onTap` is called
+ * once the guest has tapped, with or without sound, to open the invitation.
+ * Until the player is ready the ordinary tap on the screen still works.
+ */
+export function armMusicTap(onTap: () => void) {
+  if (!YT_ID || typeof window === "undefined") return;
+  tapCb = onTap;
+  tapFired = false;
+  if (yt && ytReady) enterTapMode();
+}
+
+/** Puts the player back out of the way, so later taps reach the page. */
+export function releaseMusicTap() {
+  if (ytHost) ytHost.style.cssText = HOST_OFF;
+  window.removeEventListener("blur", onWindowBlur);
 }
 
 let audio: HTMLAudioElement | null = null;
