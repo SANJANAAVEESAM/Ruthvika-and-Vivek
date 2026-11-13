@@ -260,9 +260,9 @@ export const EVENT_DAYS: EventDay[] = [
         themeKey: "masquerade",
         time: "6:00 PM",
         venue: {
-          name: "D-Convention Hall",
+          name: "D Convention & Hotel D'light",
           address: "Hunter Road, Warangal",
-          mapsQuery: "D-Convention Hall, Hunter Road, Warangal",
+          mapsQuery: "D Convention, Hotel D'light, Hunter Road, Warangal",
         },
         start: IST(10, 29, 18, 0),
         end: IST(10, 29, 22, 0),
@@ -284,7 +284,7 @@ export const EVENTS: WeddingEvent[] = EVENT_DAYS.flatMap((day) => day.events);
 
 export const FULL_WEDDING_CAL = {
   title: `${COUPLE.bride} & ${COUPLE.groom} — Wedding Celebrations`,
-  description: `Celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Marriage on 26 November at 9:15 AM IST, Jogulamba Ammavari Temple, Alampur. Reception on 29 November at 6:00 PM, D-Convention Hall, Hunter Road, Warangal.`,
+  description: `Celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Marriage on 26 November at 9:15 AM IST, Jogulamba Ammavari Temple, Alampur. Reception on 29 November at 6:00 PM, D Convention & Hotel D'light, Hunter Road, Warangal.`,
   location: "Telangana, India",
   startUtc: IST(10, 22, 11, 0).toISOString(),
   endUtc: IST(10, 29, 22, 0).toISOString(),
