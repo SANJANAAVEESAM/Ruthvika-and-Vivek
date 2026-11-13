@@ -10,10 +10,6 @@ import {
   type DetailIcon,
   EVENT_DAYS,
   FULL_WEDDING_CAL,
-  GALLERY_FOLDERS,
-  bookByLabel,
-  HOTELS,
-  hotelHref,
   WEDDING_DATE_RANGE,
   WEDDING_YEAR,
   WHATSAPP_NUMBER,
@@ -1100,8 +1096,6 @@ function DetailCards() {
               </p>
 
               {active.venues && <VenueList />}
-              {active.gallery && <GalleryList />}
-              {active.hotels && <HotelList />}
               {active.live && <LiveList />}
             </div>
           </div>
@@ -1201,157 +1195,6 @@ function VenueList() {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-/**
- * Nearby hotels, each opening its own Google Maps place page.
- *
- * The hotel holding a rate for our guests is lifted out of the list into a
- * card of its own. A discount announced in a row identical to four others is
- * a discount most guests scroll past, and this one expires — so it is given
- * the weight the rest of the site gives a celebration, and it goes first.
- */
-function HotelList() {
-  // flatMap rather than filter so the booking narrows to non-optional and the
-  // card below can read it without asserting what the filter already proved.
-  const featured = HOTELS.flatMap((hotel) =>
-    hotel.booking ? [{ ...hotel, booking: hotel.booking }] : [],
-  );
-  const rest = HOTELS.filter((hotel) => !hotel.booking);
-
-  return (
-    <div className="mx-auto mt-5 max-w-[20rem] text-left">
-      {featured.map((hotel) => (
-        <div
-          key={hotel.name}
-          className="relative overflow-hidden rounded-2xl px-4 pt-4 pb-4"
-          style={{
-            background: "color-mix(in oklab, var(--gold) 10%, var(--background))",
-            border: "1px solid color-mix(in oklab, var(--gold) 38%, transparent)",
-            boxShadow: "0 10px 26px -16px oklch(0.32 0.03 60 / 0.4)",
-          }}
-        >
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-px"
-            style={{ background: "var(--gradient-gold)" }}
-          />
-
-          <p className="font-body text-[0.54rem] font-medium tracking-[0.28em] uppercase text-bronze">
-            Special rate for our guests
-          </p>
-
-          <p className="mt-1.5 font-display text-[1.18rem] leading-tight font-semibold text-ink-strong">
-            {hotel.label}
-          </p>
-
-          {/* Deadline and map on one line: two short facts, and stacking them
-              cost a row that the panel could not spare. */}
-          <p className="font-body text-[0.72rem] leading-snug text-muted-foreground">
-            Book by{" "}
-            <span className="font-semibold text-bronze-deep">
-              {bookByLabel(hotel.booking.deadline)}
-            </span>
-            <span aria-hidden="true"> · </span>
-            <a
-              href={hotelHref(hotel.name)}
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-2 decoration-bronze/40"
-            >
-              See on map
-            </a>
-          </p>
-
-          <a
-            href={hotel.booking.url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 flex w-full items-center justify-center rounded-full px-4 py-2.5 font-body text-[0.6rem] font-medium tracking-[0.16em] uppercase"
-            style={{ background: "var(--bronze)", color: "var(--primary-foreground)" }}
-          >
-            Book with our discount
-          </a>
-        </div>
-      ))}
-
-      <p className="mt-5 mb-0.5 font-body text-[0.54rem] font-medium tracking-[0.26em] uppercase text-muted-foreground">
-        {featured.length > 0 ? "Others nearby" : "Nearby hotels"}
-      </p>
-
-      {rest.map((hotel, i) => (
-        <a
-          key={hotel.name}
-          href={hotelHref(hotel.name)}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-between gap-3 py-2.5"
-          style={{
-            borderTop:
-              i === 0 ? "none" : "1px solid color-mix(in oklab, var(--gold) 28%, transparent)",
-          }}
-        >
-          <span className="min-w-0 truncate font-display text-[1.02rem] leading-tight font-semibold text-ink-strong">
-            {hotel.label}
-          </span>
-
-          {/* A pin rather than a filled pill: five bronze buttons down the list
-              shouted louder than the one button that actually books a room. */}
-          <span
-            aria-hidden="true"
-            className="flex shrink-0 items-center gap-1 font-body text-[0.6rem] font-medium tracking-[0.14em] uppercase text-bronze"
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-            </svg>
-            Map
-          </span>
-        </a>
-      ))}
-    </div>
-  );
-}
-
-/** One row per shared folder, in the order the celebrations happen. */
-function GalleryList() {
-  return (
-    <div className="mx-auto mt-8 max-w-[20rem] text-left">
-      <p className="mb-1 font-body text-[0.58rem] font-medium tracking-[0.26em] uppercase text-muted-foreground">
-        Shared folders
-      </p>
-
-      {GALLERY_FOLDERS.map((folder, i) => (
-        <div
-          key={folder.url}
-          className="flex items-center justify-between gap-3 py-3.5"
-          style={{
-            borderTop:
-              i === 0 ? "none" : "1px solid color-mix(in oklab, var(--gold) 28%, transparent)",
-          }}
-        >
-          <p className="min-w-0 font-display text-[1.15rem] leading-tight font-semibold text-ink-strong">
-            {folder.label}
-          </p>
-
-          <a
-            href={folder.url}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Open the shared photo folder for ${folder.label}`}
-            className="shrink-0 rounded-full px-3.5 py-2 font-body text-[0.62rem] font-medium tracking-[0.14em] uppercase transition-opacity hover:opacity-90"
-            style={{ background: "var(--bronze)", color: "var(--primary-foreground)" }}
-          >
-            Open
-          </a>
-        </div>
-      ))}
     </div>
   );
 }

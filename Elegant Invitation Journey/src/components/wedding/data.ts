@@ -22,10 +22,13 @@ export const WHATSAPP_NUMBER = "917036884774";
 
 /**
  * Where the invitation lives. Share previews need absolute URLs — a crawler
- * has no page context to resolve a relative path against, which is why no
- * photograph was appearing.
+ * has no page context to resolve a relative path against.
+ *
+ * TODO(domain): set this to the live address (for example
+ * "https://ruthvikaandvivek.com") once the site is published, or the link
+ * preview image will not show when the link is shared.
  */
-export const SITE_URL = "https://thelavstory.com";
+export const SITE_URL = "";
 
 /** Left empty until there is one — the contact pop-up hides the email part. */
 export const CONTACT_EMAIL = "";
@@ -36,8 +39,8 @@ export const DESIGNER_URL = "https://www.instagram.com/sanjanaa_vv/";
 
 /**
  * Who to call. `tel` is the number that rings; `whatsapp` is only set when the
- * account lives on a different number, as Avyay's does — sending Chat to the
- * calling number would reach nobody.
+ * WhatsApp account lives on a different number — sending Chat to the calling
+ * number would reach nobody.
  */
 export const CONTACTS: {
   name: string;
@@ -50,38 +53,6 @@ export const CONTACTS: {
 ];
 
 import type { EventTheme } from "./eventThemes";
-
-/**
- * Shared Drive folders guests add their own photos to. Haldi and Mehendi share
- * one, as supplied by the couple.
- *
- * Each folder must be shared so that anyone with the link can *contribute*, not
- * just view — otherwise the button leads guests to a wall.
- */
-export const GALLERY_FOLDERS: { label: string; url: string }[] = [
-  {
-    label: "Haldi & Mehendi",
-    url: "https://drive.google.com/drive/folders/1Rb5ErOBBV1mQTkxFFEB5_CsrUfCBRxMI?usp=drive_link",
-  },
-  {
-    label: "Pellikuthuru",
-    url: "https://drive.google.com/drive/folders/1smOuRVF_4XYjHh0zeiK7V9qyUKITsvlJ?usp=drive_link",
-  },
-  {
-    label: "Pellikoduku",
-    url: "https://drive.google.com/drive/folders/1XkwXCSAN68BDPdSGGNjUnxXIWKdX1ue4?usp=drive_link",
-  },
-  {
-    label: "Sangeet & Cocktail Night",
-    url: "https://drive.google.com/drive/folders/120l9T4qSeIYm4RiQ7KfWzW3qdNidNsPr?usp=sharing",
-  },
-  {
-    // TODO(photos): supplied without a label — assumed to be the wedding, being
-    // the only celebration left. Confirm before the invitations go out.
-    label: "Wedding Ceremony",
-    url: "https://drive.google.com/drive/folders/1LRC3mlJclf4CjmCsnI8_ddAj9hBAZj36?usp=drive_link",
-  },
-];
 
 /**
  * A dress code the sheet can draw rather than merely state.
@@ -134,8 +105,6 @@ export type WeddingEvent = {
   /** Live-stream link for guests watching from afar. TODO(live): add per event. */
   liveUrl?: string;
   dressCode?: DressCode;
-  /** Shared folder for this celebration's photos. */
-  photosUrl?: string;
   /** Held at the same place as the event above it, so they list as one. */
   sharesVenueWithPrevious?: boolean;
   /**
@@ -283,70 +252,6 @@ export const EVENT_DAYS: EventDay[] = [
   },
 ];
 
-/**
- * Hotels near the celebrations. Found by name rather than by a stored URL:
- * a Maps search resolves to the place page — address, photos, reviews and
- * booking links — and cannot rot the way a copied URL can.
- *
- * A booking link is the one exception, and it is stored because it has to be:
- * it is not a place, it is our group's rate, and nothing but that exact URL
- * will find it.
- */
-export type Hotel = {
-  /** The full name, which is what finds the right place on the map. */
-  name: string;
-  /**
-   * What the row shows. Every one of these hotels is in Huntersville, minutes
-   * from Lake Norman, so each full name ends in some arrangement of those two
-   * words — repeated down a list they stop telling a guest anything and only
-   * wrap each row onto a second line. The copy says where they are once.
-   */
-  label: string;
-  /**
-   * Where we hold a rate, the row books instead of pointing at a map — the
-   * discount only applies through this link, so sending a guest to the hotel's
-   * own site would quietly cost them money.
-   */
-  booking?: { url: string; deadline: Date };
-};
-
-// The hotel holding our rate leads, so the discount is the first thing read
-// rather than something found four rows down.
-export const HOTELS: Hotel[] = [
-  {
-    name: "Courtyard by Marriott Charlotte Lake Norman",
-    label: "Courtyard by Marriott",
-    booking: {
-      url: "https://app.marriott.com/resview2?id=1788463710453&key=GRP&app=resvlink",
-      deadline: IST(9, 14, 23, 59),
-    },
-  },
-  { name: "Four Points by Sheraton Charlotte - Lake Norman", label: "Four Points by Sheraton" },
-  { name: "Comfort Suites Huntersville near Lake Norman", label: "Comfort Suites" },
-  { name: "Best Western Plus Huntersville Inn", label: "Best Western Plus" },
-  {
-    name: "SpringHill Suites by Marriott Charlotte Huntersville",
-    label: "SpringHill Suites by Marriott",
-  },
-];
-
-/**
- * The booking deadline in words, so the copy and the row cannot disagree.
- *
- * Formatted in Eastern time rather than the reader's: a guest booking from
- * India should see the date the hotel means, not the one their own midnight
- * happens to fall on.
- */
-export const bookByLabel = (deadline: Date): string =>
-  deadline.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    timeZone: "Asia/Kolkata",
-  });
-
-export const hotelHref = (name: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
-
 /** Directions link, or null while the venue is still unconfirmed. */
 export function venueMapsHref(venue: Venue): string | null {
   if (venue.mapsUrl) return venue.mapsUrl;
@@ -368,27 +273,15 @@ export const FULL_WEDDING_CAL = {
 
 export type DetailIcon = "bed" | "plane" | "camera" | "pin" | "live";
 
-// TODO(content): shuttle timings still need to be filled in by the couple —
-// the copy below says so plainly rather than promising details that may not
-// arrive.
 export const DETAIL_CARDS: {
   title: string;
   icon: DetailIcon;
   body: string;
   /** Appends the full venue list, with directions, under the copy. */
   venues?: boolean;
-  /** Appends the shared photo folders under the copy. */
-  gallery?: boolean;
-  /** Appends the nearby hotels under the copy. */
-  hotels?: boolean;
   /** Appends each event's live-stream link under the copy. */
   live?: boolean;
 }[] = [
-  {
-    title: "Travel",
-    icon: "plane",
-    body: "Charlotte Douglas International (CLT) is the closest airport and the easiest arrival for almost everyone. It's a major hub, so most guests will find a direct flight.\n\nFrom the airport it's roughly half an hour to the venues, traffic depending. Rental cars, Uber and Lyft are all easy to find at CLT, and we'd suggest a car — the venues are a little spread out and not walkable from one another.",
-  },
   {
     title: "Venues",
     icon: "pin",

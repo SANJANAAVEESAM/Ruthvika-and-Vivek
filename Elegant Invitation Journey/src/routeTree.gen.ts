@@ -10,115 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AudioCheckRouteImport } from './routes/audio-check'
-import { Route as CelebrationsPreviewRouteImport } from './routes/celebrations-preview'
-import { Route as ClosingPreviewRouteImport } from './routes/closing-preview'
-import { Route as ColoursPreviewRouteImport } from './routes/colours-preview'
-import { Route as CountdownPreviewRouteImport } from './routes/countdown-preview'
-import { Route as OpeningPreviewRouteImport } from './routes/opening-preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AudioCheckRoute = AudioCheckRouteImport.update({
-  id: '/audio-check',
-  path: '/audio-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CelebrationsPreviewRoute = CelebrationsPreviewRouteImport.update({
-  id: '/celebrations-preview',
-  path: '/celebrations-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClosingPreviewRoute = ClosingPreviewRouteImport.update({
-  id: '/closing-preview',
-  path: '/closing-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ColoursPreviewRoute = ColoursPreviewRouteImport.update({
-  id: '/colours-preview',
-  path: '/colours-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CountdownPreviewRoute = CountdownPreviewRouteImport.update({
-  id: '/countdown-preview',
-  path: '/countdown-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpeningPreviewRoute = OpeningPreviewRouteImport.update({
-  id: '/opening-preview',
-  path: '/opening-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/audio-check': typeof AudioCheckRoute
-  '/celebrations-preview': typeof CelebrationsPreviewRoute
-  '/closing-preview': typeof ClosingPreviewRoute
-  '/colours-preview': typeof ColoursPreviewRoute
-  '/countdown-preview': typeof CountdownPreviewRoute
-  '/opening-preview': typeof OpeningPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/audio-check': typeof AudioCheckRoute
-  '/celebrations-preview': typeof CelebrationsPreviewRoute
-  '/closing-preview': typeof ClosingPreviewRoute
-  '/colours-preview': typeof ColoursPreviewRoute
-  '/countdown-preview': typeof CountdownPreviewRoute
-  '/opening-preview': typeof OpeningPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/audio-check': typeof AudioCheckRoute
-  '/celebrations-preview': typeof CelebrationsPreviewRoute
-  '/closing-preview': typeof ClosingPreviewRoute
-  '/colours-preview': typeof ColoursPreviewRoute
-  '/countdown-preview': typeof CountdownPreviewRoute
-  '/opening-preview': typeof OpeningPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/audio-check'
-    | '/celebrations-preview'
-    | '/closing-preview'
-    | '/colours-preview'
-    | '/countdown-preview'
-    | '/opening-preview'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/audio-check'
-    | '/celebrations-preview'
-    | '/closing-preview'
-    | '/colours-preview'
-    | '/countdown-preview'
-    | '/opening-preview'
-  id:
-    | '__root__'
-    | '/'
-    | '/audio-check'
-    | '/celebrations-preview'
-    | '/closing-preview'
-    | '/colours-preview'
-    | '/countdown-preview'
-    | '/opening-preview'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AudioCheckRoute: typeof AudioCheckRoute
-  CelebrationsPreviewRoute: typeof CelebrationsPreviewRoute
-  ClosingPreviewRoute: typeof ClosingPreviewRoute
-  ColoursPreviewRoute: typeof ColoursPreviewRoute
-  CountdownPreviewRoute: typeof CountdownPreviewRoute
-  OpeningPreviewRoute: typeof OpeningPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -130,59 +48,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/audio-check': {
-      id: '/audio-check'
-      path: '/audio-check'
-      fullPath: '/audio-check'
-      preLoaderRoute: typeof AudioCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/celebrations-preview': {
-      id: '/celebrations-preview'
-      path: '/celebrations-preview'
-      fullPath: '/celebrations-preview'
-      preLoaderRoute: typeof CelebrationsPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/closing-preview': {
-      id: '/closing-preview'
-      path: '/closing-preview'
-      fullPath: '/closing-preview'
-      preLoaderRoute: typeof ClosingPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/colours-preview': {
-      id: '/colours-preview'
-      path: '/colours-preview'
-      fullPath: '/colours-preview'
-      preLoaderRoute: typeof ColoursPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/countdown-preview': {
-      id: '/countdown-preview'
-      path: '/countdown-preview'
-      fullPath: '/countdown-preview'
-      preLoaderRoute: typeof CountdownPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opening-preview': {
-      id: '/opening-preview'
-      path: '/opening-preview'
-      fullPath: '/opening-preview'
-      preLoaderRoute: typeof OpeningPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AudioCheckRoute: AudioCheckRoute,
-  CelebrationsPreviewRoute: CelebrationsPreviewRoute,
-  ClosingPreviewRoute: ClosingPreviewRoute,
-  ColoursPreviewRoute: ColoursPreviewRoute,
-  CountdownPreviewRoute: CountdownPreviewRoute,
-  OpeningPreviewRoute: OpeningPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

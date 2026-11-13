@@ -36,8 +36,8 @@ The repository root contains the project in a sub-folder, and **that folder name
 has spaces in it** — quote the path or your shell will split it:
 
 ```sh
-git clone https://github.com/SANJANAAVEESAM/AlaYela.git
-cd AlaYela/"Elegant Invitation Journey"
+git clone https://github.com/SANJANAAVEESAM/Ruthvika-and-Vivek.git
+cd Ruthvika-and-Vivek/"Elegant Invitation Journey"
 ```
 
 ### 3. Install
@@ -77,9 +77,8 @@ the same Wi-Fi, look for the `Network:` line printed on startup:
 ➜  Network:  http://192.168.x.x:8080/   ← open this on your phone
 ```
 
-Two things don't work over a plain network address, and neither is a bug:
-copying the contact email needs a secure context, and there is no music file
-committed (see below).
+The music plays through YouTube's embedded player, so the phone needs internet.
+Which song, and where it starts, are set at the top of `src/lib/music.ts`.
 
 ---
 
@@ -167,14 +166,16 @@ inline `transform` will double the shift. Centre with flexbox instead.
 
 Search the codebase for `TODO(` to find these:
 
-- **`TODO(venue)`** — all six venues read "To be announced". Adding a `mapsUrl`
-  to a venue makes its directions button appear automatically.
-- **`TODO(phone)`** — `WHATSAPP_NUMBER` is a placeholder, so RSVP submissions
-  currently go nowhere real.
-- **`TODO(content)`** — contact email, the detail-card copy, story captions, and
-  Mehendi's dress code (which should be an inspiration image, not text).
-- **`TODO(music)`** — the invitation loads `/music/invitation.mp3` at runtime and
-  stays silent if it's absent. Drop a file at `public/music/` to enable it.
+- **RSVPs** — they are saved to a Google Sheet through an Apps Script. Until
+  `RSVP_WEBHOOK_URL` is set, the form falls back to a ready-written WhatsApp
+  message to Sunny. Setup is in `docs/rsvp-setup.md`.
+- **`TODO(domain)`** — `SITE_URL` in `src/components/wedding/data.ts` is empty.
+  Set it to the live address so the link preview (`public/share.jpg`) shows
+  when the link is shared.
+- **`TODO(live)`** — each event's `liveUrl` in `data.ts`. Until one is added,
+  its row under "Live links" reads "Link coming soon".
+- **Contact email** — `CONTACT_EMAIL` in `data.ts` is empty, so the contact
+  sheet shows only the two phone numbers.
 
 ---
 
