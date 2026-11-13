@@ -18,8 +18,9 @@
 export const MUSIC_SRC = "/music/invitation.mp3";
 /**
  * Where in the file to begin, and begin again on each loop. The file itself was
- * cut to begin at 0:38 of the original recording, because phones often refuse
- * to jump forward inside an audio file, so this stays 0.
+ * cut to run from 0:53 to 1:55 of the original recording (see
+ * tools/cut-song.ps1), because phones often refuse to jump forward inside an
+ * audio file, so this stays 0.
  */
 const LOCAL_START = 0;
 const TARGET_VOLUME = 0.3;
@@ -31,8 +32,8 @@ const FADE_MS = 3500;
  * "dPEPw-H12Ek") — it is slower to start, can show ads, and phones may refuse it.
  */
 const YT_ID = "";
-/** Where in the song to begin, and begin again on each loop: 0:38. */
-const YT_START = 38;
+/** Where in the song to begin, and begin again on each loop: 0:53. (YouTube route only.) */
+const YT_START = 53;
 
 /**
  * Diagnostics: add ?musicdebug=1 to the address and a small log of what the
@@ -308,6 +309,26 @@ function buildGraph(el: HTMLAudioElement): GainNode | null {
 
 let localEl: HTMLAudioElement | null = null;
 
+/** Seconds of fade at each end of the clip, where it turns round. */
+const LOOP_FADE_S = 1.5;
+
+/** Sets the loudness, through the gain node on platforms that ignore `volume`. */
+function setLevel(el: HTMLAudioElement, level: number) {
+  if (gain) gain.gain.value = level;
+  else el.volume = Math.min(1, Math.max(0, level));
+}
+
+/** Moves the loudness smoothly to `to` over `ms` milliseconds. */
+function rampLevel(el: HTMLAudioElement, to: number, ms: number) {
+  const started = performance.now();
+  const step = (now: number) => {
+    const t = Math.min(1, (now - started) / ms);
+    setLevel(el, to * t);
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 /** The song file, loading and waiting at the start point. Made once. */
 function prepareLocal(): HTMLAudioElement {
   if (localEl) return localEl;
@@ -322,12 +343,25 @@ function prepareLocal(): HTMLAudioElement {
     }
   };
   el.addEventListener("loadedmetadata", seek, { once: true });
-  // Round again from the start point, not from the top of the file.
+
+  // The clip ends mid-song, so the turn-around is softened: it fades out over
+  // the last 1.5 seconds, then fades back in as it starts again. (Where a
+  // phone ignores volume, as iPhones do, it simply restarts.)
+  el.addEventListener("timeupdate", () => {
+    if (audio !== el || !Number.isFinite(el.duration) || muted) return;
+    const left = el.duration - el.currentTime;
+    if (left < LOOP_FADE_S) setLevel(el, TARGET_VOLUME * Math.max(0, left / LOOP_FADE_S));
+  });
   el.addEventListener("ended", () => {
     seek();
+    setLevel(el, 0);
     void el.play();
+    rampLevel(el, TARGET_VOLUME, LOOP_FADE_S * 1000);
   });
   localEl = el;
+  if (/[?&]musicdebug\b/.test(window.location.search)) {
+    (window as unknown as { __rvAudio?: HTMLAudioElement }).__rvAudio = el;
+  }
   dbg(`local file: loading ${MUSIC_SRC}`);
   return el;
 }
