@@ -1,4 +1,4 @@
-# Lasya & Avyay — wedding invitation
+# Ruthvika & Vivek — wedding invitation
 
 An interactive wedding invitation: a pleated envelope that opens into a
 scroll-driven single page covering the couple's story, the three days of

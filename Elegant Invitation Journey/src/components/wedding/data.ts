@@ -1,25 +1,21 @@
 
-export const COUPLE = { bride: "Lasya", groom: "Avyay" };
+export const COUPLE = { bride: "Ruthvika", groom: "Vivek" };
 
-/** ⚠️ Year is unconfirmed (reference doc said 2027) — change it here only. */
 export const WEDDING_YEAR = 2026;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
- * A wall-clock Eastern time, as an instant.
- *
- * Late October sits before US daylight saving ends — the first Sunday in
- * November — so these dates are EDT, UTC-4, in 2026 and 2027 alike. Month is
- * zero-based, matching Date.
+ * A wall-clock India Standard Time, as an instant. IST is UTC+5:30 all year
+ * (no daylight saving). Month is zero-based, matching Date.
  */
-const ET = (month: number, day: number, hour: number, minute: number) =>
-  new Date(`${WEDDING_YEAR}-${pad(month + 1)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00-04:00`);
+const IST = (month: number, day: number, hour: number, minute: number) =>
+  new Date(`${WEDDING_YEAR}-${pad(month + 1)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00+05:30`);
 
-/** Muhurtham — Oct 31, 7:25 PM Eastern. */
-export const WEDDING_DATE = ET(9, 31, 19, 25);
+/** Marriage — Thursday 26 November, 9:15 AM IST. */
+export const WEDDING_DATE = IST(10, 26, 9, 15);
 
-export const WEDDING_DATE_RANGE = `October 29–31, ${WEDDING_YEAR}`;
+export const WEDDING_DATE_RANGE = `November 22–26, ${WEDDING_YEAR}`;
 
 export const WHATSAPP_NUMBER = "18326686089";
 
@@ -30,7 +26,8 @@ export const WHATSAPP_NUMBER = "18326686089";
  */
 export const SITE_URL = "https://thelavstory.com";
 
-export const CONTACT_EMAIL = "lasyaandavyay@gmail.com";
+/** Left empty until there is one — the contact pop-up hides the email part. */
+export const CONTACT_EMAIL = "";
 
 /** Credited in the closing line. */
 export const DESIGNER = "Sanjana Veesam";
@@ -47,13 +44,8 @@ export const CONTACTS: {
   display: string;
   whatsapp?: string;
 }[] = [
-  { name: COUPLE.bride, tel: "+18326689442", display: "+1 832 668 9442" },
-  {
-    name: COUPLE.groom,
-    tel: "+17049066859",
-    display: "+1 704 906 6859",
-    whatsapp: "+919550634521",
-  },
+  { name: "SadaShivudu", tel: "+919440601086", display: "+91 94406 01086" },
+  { name: "Sunny", tel: "+917036884774", display: "+91 70368 84774" },
 ];
 
 import type { EventTheme } from "./eventThemes";
@@ -123,6 +115,21 @@ export type WeddingEvent = {
   /** Drives the accent and motif on the event's full-page details. */
   themeKey: EventTheme;
   time: string;
+  /** Small caps label above the time, e.g. "Sumuhurtham". */
+  timeLabel?: string;
+  /** A short line after the venue, e.g. "Lunch to follow". */
+  note?: string;
+  /** The event's name in Telugu, shown under the English one in its details. */
+  teluguName?: string;
+  /** A few lines about the celebration, in English and in Telugu. */
+  about?: string;
+  aboutTe?: string;
+  /** What to wear, e.g. "Shades of yellow and festive brights". */
+  attire?: string;
+  /** A fuller title for the details pop-up, when the schedule's name is short. */
+  fullName?: string;
+  /** The key moments of the ceremony, listed in its details. */
+  rituals?: { name: string; detail?: string }[];
   dressCode?: DressCode;
   /** Shared folder for this celebration's photos. */
   photosUrl?: string;
@@ -135,7 +142,7 @@ export type WeddingEvent = {
    */
   invitation?: {
     lead: string;
-    parties: { name: string; parents: string }[];
+    parties: { name: string; parents?: string }[];
   };
   /** TODO(content): Mehendi's dress code is an inspiration photo, not text —
    *  drop the image in src/assets and point this at it. */
@@ -165,147 +172,109 @@ export type EventDay = {
  * the shared links are dropped — they are tied to the session that produced
  * them and mean nothing to a guest.
  */
-const HEARTLAND: Venue = {
-  name: "Heartland Heritage Acres",
-  address: "2067 Coddle Creek Hwy, Mooresville, NC 28115",
-  mapsUrl:
-    "https://www.google.com/maps?q=Heartland+Heritage+Acres,+2067+Coddle+Creek+Hwy,+Mooresville,+NC+28115&ftid=0x885401007b69d963:0x1dd2ea1d7281c588",
-};
-
-const LUXE: Venue = {
-  name: "Luxe Event Venue",
-  address: "10213 John Adams Rd, Charlotte, NC 28262",
-  mapsUrl:
-    "https://maps.google.com/maps/place//data=!4m2!3m1!1s0x88541d7fe97a02a5:0x54f177497cd295da?entry=s&sa=X&ved=2ahUKEwiV4qiysf6VAxWyj4kEHTiHF2IQ4kB6BAgEEAA&hl=en",
-};
-
-// A home rather than a hall, so the street is the name and the town is the
-// second line — there is no venue name to put above it.
-const BEECHER_COMMONS: Venue = {
-  name: "19016 Beecher Commons Dr",
-  address: "Huntersville, NC 28078",
-  mapsUrl:
-    "https://www.google.com/maps?q=19016+Beecher+Commons+Dr,+Huntersville,+NC+28078&ftid=0x8856a826dac82289:0xb57cb91368b608fb",
+const MOONA: Venue = {
+  name: "Moona Resort",
+  address: "Unikicherla",
+  mapsQuery: "Moona Resort, Unikicherla",
 };
 
 export const EVENT_DAYS: EventDay[] = [
   {
-    date: "29 October",
-    weekday: "Thursday",
+    date: "22 November",
+    weekday: "Sunday",
     events: [
       {
         slug: "haldi",
         name: "Haldi",
         themeKey: "carnival",
-        theme: "Carnival",
-        time: "11:00 AM onwards",
-        dressCode: {
-          label: "Festive solid colours",
-          note: "Come dressed in festive solid colours — fuchsia, coral, emerald, teal, royal blue, purple, orange. Mirror work and playful accessories are encouraged.",
-        },
-        photosUrl: GALLERY_FOLDERS[0].url,
-        venue: HEARTLAND,
-        start: ET(9, 29, 11, 0),
-        end: ET(9, 29, 15, 0),
+        time: "11:00 AM",
+        note: "Lunch to follow",
+        teluguName: "పసుపు వేడుక",
+        about:
+          "The celebrations open with the Haldi at 11:00 AM IST — turmeric, blessings and laughter as family and friends anoint the couple and wish them well for the days ahead. Lunch follows at the resort.",
+        aboutTe:
+          "వేడుకలు పసుపు వేడుకతో మొదలవుతాయి — కుటుంబ సభ్యులు, స్నేహితులు వధూవరులకు పసుపు రాసి ఆశీర్వదిస్తారు. తర్వాత అందరూ కలిసి మధ్యాహ్న భోజనం చేస్తారు.",
+        attire: "Shades of yellow and festive brights",
+        venue: MOONA,
+        start: IST(10, 22, 11, 0),
+        end: IST(10, 22, 15, 0),
       },
       {
-        slug: "mehendi",
-        name: "Mehendi",
-        themeKey: "mehendi",
-        theme: "Carnival",
-        time: "4:00 PM onwards",
-        followsPrevious: true,
-        dressCode: {
-          label: "Festive solid colours",
-          note: "Come dressed in festive solid colours — fuchsia, coral, emerald, teal, royal blue, purple, orange. Mirror work and playful accessories are encouraged.",
-        },
-        photosUrl: GALLERY_FOLDERS[0].url,
+        slug: "sangeeth",
+        name: "Sangeeth",
+        themeKey: "masquerade",
+        time: "7:00 PM",
+        note: "Dinner to follow",
+        teluguName: "సంగీత సంబరం",
+        about:
+          "The same day closes with the Sangeeth in the evening — music, dance and family performances at the resort. Bring a song, a dance, or at the very least, enthusiastic applause. Dinner follows.",
+        aboutTe:
+          "అదే రోజు సాయంత్రం సంగీత సంబరం — పాటలు, నృత్యాలు, కుటుంబ ప్రదర్శనలతో సందడిగా సాగుతుంది. మీరూ ఒక పాటో, నృత్యమో సిద్ధం చేసుకుని రండి! తర్వాత విందు భోజనం ఉంటుంది.",
+        attire: "Bright colours and Indo-western wear, comfortable for dancing",
         sharesVenueWithPrevious: true,
-        venue: HEARTLAND,
-        start: ET(9, 29, 16, 0),
-        end: ET(9, 29, 21, 0),
+        venue: MOONA,
+        start: IST(10, 22, 19, 0),
+        end: IST(10, 22, 23, 0),
       },
     ],
   },
   {
-    date: "30 October",
-    weekday: "Friday",
+    date: "23 November",
+    weekday: "Monday",
     events: [
       {
         slug: "pellikuthuru",
-        name: "Pellikuthuru",
+        name: "Pelli Kuthuru",
         themeKey: "pellikuthuru",
-        theme: "Vintage",
-        time: "9:30 AM onwards",
-        photosUrl: GALLERY_FOLDERS[1].url,
-        venue: LUXE,
-        start: ET(9, 30, 9, 30),
-        end: ET(9, 30, 13, 0),
-      },
-      {
-        slug: "sangeet",
-        name: "Sangeet & Cocktail Night",
-        themeKey: "masquerade",
-        theme: "Bling • Masquerade Ball",
-        time: "6:00 PM onwards",
-        dressCode: {
-          label: "Bling & Sequins",
-          lines: [
-            { who: "Men", what: "Party-wear suits — please avoid jeans and tennis shoes." },
-            { who: "Women", what: "Shiny cocktail wear or sequinned dresses." },
-          ],
-        },
-        photosUrl: GALLERY_FOLDERS[3].url,
-        sharesVenueWithPrevious: true,
-        venue: LUXE,
-        start: ET(9, 30, 18, 0),
-        end: ET(9, 31, 0, 0),
+        time: "11:00 AM",
+        teluguName: "పెళ్ళికూతురు",
+        about:
+          "The bride is made Pelli Kuthuru at home — anointed and blessed by family in the warmth of the residence, surrounded by songs, turmeric and jasmine, as the wedding morning draws near.",
+        aboutTe:
+          "ఇంట్లోనే వధువును పెళ్ళికూతురుగా తీర్చిదిద్దే వేడుక — పసుపు, మల్లెపూలు, పాటల నడుమ కుటుంబ సభ్యుల ఆశీస్సులతో జరుగుతుంది.",
+        attire: "Festive traditional wear in bright colours",
+        // A home rather than a hall — no address or map to show.
+        venue: { name: "At our residence" },
+        start: IST(10, 23, 11, 0),
+        end: IST(10, 23, 14, 0),
       },
     ],
   },
   {
-    date: "31 October",
-    weekday: "Saturday",
+    date: "26 November",
+    weekday: "Thursday",
     events: [
       {
-        slug: "pellikoduku",
-        name: "Pellikoduku",
-        themeKey: "pellikoduku",
-        theme: "Vintage",
-        time: "11:15 AM onwards",
-        photosUrl: GALLERY_FOLDERS[2].url,
-        venue: BEECHER_COMMONS,
-        start: ET(9, 31, 11, 15),
-        end: ET(9, 31, 14, 0),
-      },
-      {
         slug: "wedding",
-        name: "Wedding Ceremony",
+        name: "Marriage",
         themeKey: "telugu",
-        theme: "Telugu Elegance",
-        time: "Muhurtham: 7:25 PM",
-        photosUrl: GALLERY_FOLDERS[4].url,
+        time: "9:15 AM",
+        timeLabel: "Sumuhurtham",
+        fullName: "Pelli / Muhurtham — The Wedding",
+        teluguName: "వివాహ మహోత్సవం",
+        about:
+          "The main ceremony, at the temple of Goddess Jogulamba — one of the Shakti Peethas — on the banks of the Tungabhadra. Please plan to arrive well before 9:15 AM: the Muhurtham waits for no one.",
+        aboutTe:
+          "శక్తిపీఠమైన జోగులాంబ అమ్మవారి సన్నిధిలో, తుంగభద్ర నదీ తీరంలో జరిగే ప్రధాన వివాహ వేడుక. ముహూర్తం ఉదయం 9:15 — దయచేసి ముందుగానే చేరుకోండి.",
+        rituals: [
+          { name: "Jeelakarra Bellam", detail: "at the exact Muhurtham" },
+          { name: "Kanyadaanam", detail: "the giving away of the bride" },
+          { name: "Mangalsutram & Mettelu", detail: "the sacred thread and toe rings" },
+          { name: "Talambralu", detail: "the showering of turmeric rice" },
+        ],
+        attire:
+          "Kanjeevaram silk sarees, kurta–dhotis and other traditional wear. Modest, temple-appropriate dress; footwear is removed at the temple.",
         invitation: {
-          lead: "We cordially invite you to the wedding ceremony of",
-          parties: [
-            {
-              name: "Avyay Yennamaneni",
-              parents: "S/o Smt. Yennamaneni Haritha & Sri. Yennamaneni Srinivas Rao",
-            },
-            {
-              name: "Lasya Rao Joginpally",
-              parents: "D/o Smt. Joginpally Saritha & Sri. Joginpally Rajender Rao",
-            },
-          ],
+          lead: "With the blessings of our families, we joyfully invite you to the wedding of",
+          parties: [{ name: "Ruthvika" }, { name: "Vivek" }],
         },
         venue: {
-          name: "Sweet Magnolia Estate",
-          address: "10101 Bailey Rd, Cornelius, NC 28031",
-          mapsUrl:
-            "https://maps.google.com/maps/place//data=!4m2!3m1!1s0x8856a90c1f2caa73:0xcc55dd654a58f67d?entry=s&sa=X&ved=2ahUKEwirvNPhsf6VAxX238kDHdhBNe4Q4kB6BAgVEAA&hl=en",
+          name: "Jogulamba Ammavari Temple",
+          address: "Alampur, Gadwal, Telangana",
+          mapsQuery: "Jogulamba Temple, Alampur",
         },
-        start: ET(9, 31, 19, 25),
-        end: ET(9, 31, 23, 59),
+        start: IST(10, 26, 9, 15),
+        end: IST(10, 26, 13, 0),
       },
     ],
   },
@@ -346,7 +315,7 @@ export const HOTELS: Hotel[] = [
     label: "Courtyard by Marriott",
     booking: {
       url: "https://app.marriott.com/resview2?id=1788463710453&key=GRP&app=resvlink",
-      deadline: ET(9, 14, 23, 59),
+      deadline: IST(9, 14, 23, 59),
     },
   },
   { name: "Four Points by Sheraton Charlotte - Lake Norman", label: "Four Points by Sheraton" },
@@ -369,7 +338,7 @@ export const bookByLabel = (deadline: Date): string =>
   deadline.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
-    timeZone: "America/New_York",
+    timeZone: "Asia/Kolkata",
   });
 
 export const hotelHref = (name: string) =>
@@ -388,10 +357,10 @@ export const EVENTS: WeddingEvent[] = EVENT_DAYS.flatMap((day) => day.events);
 
 export const FULL_WEDDING_CAL = {
   title: `${COUPLE.bride} & ${COUPLE.groom} — Wedding Celebrations`,
-  description: `Three days of celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Muhurtham on October 31 at 7:25 PM.`,
-  location: "Charlotte, North Carolina",
-  startUtc: ET(9, 29, 11, 0).toISOString(),
-  endUtc: ET(9, 31, 23, 0).toISOString(),
+  description: `Celebrations for the wedding of ${COUPLE.bride} & ${COUPLE.groom}. Marriage on 26 November at 9:15 AM IST, Jogulamba Ammavari Temple, Alampur.`,
+  location: "Telangana, India",
+  startUtc: IST(10, 22, 11, 0).toISOString(),
+  endUtc: IST(10, 26, 13, 0).toISOString(),
 };
 
 export type DetailIcon = "bed" | "plane" | "camera" | "pin";
@@ -411,21 +380,9 @@ export const DETAIL_CARDS: {
   hotels?: boolean;
 }[] = [
   {
-    title: "Accommodation",
-    icon: "bed",
-    body: "Our favourite places to stay, all in Huntersville and a few minutes from the celebrations. We'd love for everyone to be nearby.",
-    hotels: true,
-  },
-  {
     title: "Travel",
     icon: "plane",
     body: "Charlotte Douglas International (CLT) is the closest airport and the easiest arrival for almost everyone. It's a major hub, so most guests will find a direct flight.\n\nFrom the airport it's roughly half an hour to the venues, traffic depending. Rental cars, Uber and Lyft are all easy to find at CLT, and we'd suggest a car — the venues are a little spread out and not walkable from one another.",
-  },
-  {
-    title: "Gallery",
-    icon: "camera",
-    body: "Every celebration has its own shared folder. Add the photos you take, and look through everyone else's.",
-    gallery: true,
   },
   {
     title: "Venues",

@@ -22,8 +22,11 @@ export function Modal({
   open: boolean;
   onClose: () => void;
   label: string;
-  /** "full" covers the whole screen; "sheet" rises part-way, the default. */
-  variant?: "sheet" | "full";
+  /**
+   * "full" covers the whole screen; "sheet" rises part-way, the default;
+   * "card" floats in the centre over a softened page.
+   */
+  variant?: "sheet" | "full" | "card";
   /** Overrides the panel's ground — used to give each event its own setting. */
   panelStyle?: CSSProperties;
   /** Sits behind the content and stays put while it scrolls. */
@@ -31,6 +34,7 @@ export function Modal({
   children: ReactNode;
 }) {
   const full = variant === "full";
+  const card = variant === "card";
 
   useEffect(() => {
     if (!open) return;
@@ -62,15 +66,50 @@ export function Modal({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-foreground/25"
+        className={`absolute inset-0 ${card ? "bg-foreground/20" : "bg-foreground/25"}`}
         style={{
-          backdropFilter: "blur(2px)",
+          backdropFilter: card ? "blur(6px)" : "blur(2px)",
+          WebkitBackdropFilter: card ? "blur(6px)" : "blur(2px)",
           transition: "opacity 420ms ease",
           opacity: open ? 1 : 0,
         }}
       />
 
-      {/* Panel */}
+      {card ? (
+        // A floating card: centred, fading and settling into place.
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={label}
+            className="pointer-events-auto relative flex max-h-[82dvh] w-full max-w-[22rem] flex-col overflow-hidden rounded-[28px] bg-pearl"
+            style={{
+              boxShadow:
+                "0 30px 70px -24px oklch(0.25 0.03 60 / 0.55), 0 0 0 1px color-mix(in oklab, var(--gold) 35%, transparent)",
+              transition: "opacity 380ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1)",
+              opacity: open ? 1 : 0,
+              transform: open ? "translateY(0) scale(1)" : "translateY(18px) scale(0.96)",
+              ...panelStyle,
+            }}
+          >
+            {backdrop && (
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                {backdrop}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="absolute top-3.5 right-3.5 z-10 flex size-8 items-center justify-center rounded-full bg-secondary/90 text-base leading-none text-foreground/70 shadow-sm transition-colors hover:text-foreground"
+            >
+              ×
+            </button>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">{children}</div>
+          </div>
+        </div>
+      ) : (
+      /* Panel */
       <div
         role="dialog"
         aria-modal="true"
@@ -114,6 +153,7 @@ export function Modal({
           {children}
         </div>
       </div>
+      )}
     </div>
   );
 }

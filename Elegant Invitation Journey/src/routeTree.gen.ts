@@ -11,7 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AudioCheckRouteImport } from './routes/audio-check'
-import { Route as StoryRouteImport } from './routes/story'
+import { Route as CelebrationsPreviewRouteImport } from './routes/celebrations-preview'
+import { Route as ColoursPreviewRouteImport } from './routes/colours-preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +24,54 @@ const AudioCheckRoute = AudioCheckRouteImport.update({
   path: '/audio-check',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StoryRoute = StoryRouteImport.update({
-  id: '/story',
-  path: '/story',
+const CelebrationsPreviewRoute = CelebrationsPreviewRouteImport.update({
+  id: '/celebrations-preview',
+  path: '/celebrations-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ColoursPreviewRoute = ColoursPreviewRouteImport.update({
+  id: '/colours-preview',
+  path: '/colours-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audio-check': typeof AudioCheckRoute
-  '/story': typeof StoryRoute
+  '/celebrations-preview': typeof CelebrationsPreviewRoute
+  '/colours-preview': typeof ColoursPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audio-check': typeof AudioCheckRoute
-  '/story': typeof StoryRoute
+  '/celebrations-preview': typeof CelebrationsPreviewRoute
+  '/colours-preview': typeof ColoursPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/audio-check': typeof AudioCheckRoute
-  '/story': typeof StoryRoute
+  '/celebrations-preview': typeof CelebrationsPreviewRoute
+  '/colours-preview': typeof ColoursPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/audio-check' | '/story'
+  fullPaths: '/' | '/audio-check' | '/celebrations-preview' | '/colours-preview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/audio-check' | '/story'
-  id: '__root__' | '/' | '/audio-check' | '/story'
+  to: '/' | '/audio-check' | '/celebrations-preview' | '/colours-preview'
+  id:
+    | '__root__'
+    | '/'
+    | '/audio-check'
+    | '/celebrations-preview'
+    | '/colours-preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AudioCheckRoute: typeof AudioCheckRoute
-  StoryRoute: typeof StoryRoute
+  CelebrationsPreviewRoute: typeof CelebrationsPreviewRoute
+  ColoursPreviewRoute: typeof ColoursPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +90,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AudioCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/story': {
-      id: '/story'
-      path: '/story'
-      fullPath: '/story'
-      preLoaderRoute: typeof StoryRouteImport
+    '/celebrations-preview': {
+      id: '/celebrations-preview'
+      path: '/celebrations-preview'
+      fullPath: '/celebrations-preview'
+      preLoaderRoute: typeof CelebrationsPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colours-preview': {
+      id: '/colours-preview'
+      path: '/colours-preview'
+      fullPath: '/colours-preview'
+      preLoaderRoute: typeof ColoursPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +110,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AudioCheckRoute: AudioCheckRoute,
-  StoryRoute: StoryRoute,
+  CelebrationsPreviewRoute: CelebrationsPreviewRoute,
+  ColoursPreviewRoute: ColoursPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

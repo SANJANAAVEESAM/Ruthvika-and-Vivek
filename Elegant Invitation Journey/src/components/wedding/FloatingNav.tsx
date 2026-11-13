@@ -3,7 +3,6 @@ import { COUPLE } from "./data";
 
 const MENU_LINKS = [
   { href: "#home", label: "Home" },
-  { href: "#chapter-one", label: "Story" },
   { href: "#events", label: "Events" },
   { href: "#rsvp", label: "RSVP" },
   { href: "#details", label: "Additional details" },

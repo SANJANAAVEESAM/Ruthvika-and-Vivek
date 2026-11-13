@@ -1,4 +1,4 @@
-import couplePhoto from "@/assets/couple.jpg";
+import couplePhoto from "@/assets/couple-ruthvika-vivek.jpg";
 import { COUPLE } from "./data";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 
@@ -30,8 +30,8 @@ export function Hero({ live }: { live: boolean }) {
         >
           <img
             src={couplePhoto}
-            alt={`${COUPLE.bride} and ${COUPLE.groom} walking on a beach at golden hour`}
-            width={798}
+            alt={`${COUPLE.bride} and ${COUPLE.groom} holding their rings together`}
+            width={800}
             height={1200}
             className="animate-hero-zoom absolute inset-0 h-full w-full object-cover object-center"
           />
@@ -55,9 +55,10 @@ export function Hero({ live }: { live: boolean }) {
             }}
           >
             <h1
-              className="text-center font-display leading-[1.08] text-white italic"
+              // One line: sized to the card so "Ruthvika & Vivek" never wraps.
+              className="text-center font-display leading-[1.08] whitespace-nowrap text-white italic"
               style={{
-                fontSize: "clamp(2.5rem, 12vw, 3.5rem)",
+                fontSize: "min(3.5rem, calc((min(100vw, 26rem) - 4rem) / 7.4))",
                 // Explicit: the h1 rule's 600 has no italic cut here and would fake-bold.
                 fontWeight: 400,
                 textShadow: "0 2px 18px oklch(0.24 0.03 60 / 0.4)",

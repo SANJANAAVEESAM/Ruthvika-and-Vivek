@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import storyAirport from "@/assets/story-airport.jpg";
-import storyCamping from "@/assets/story-camping.jpg";
-import storyOodenny from "@/assets/story-oodenny.jpg";
-
 import {
   CONTACT_EMAIL,
   CONTACTS,
@@ -36,8 +32,8 @@ import { MusicToggle } from "./MusicToggle";
 import { Ornament } from "./Ornament";
 import { Petals } from "./Petals";
 import { Reveal } from "./Reveal";
-import { ScrollReveal } from "./ScrollReveal";
 import { EVENT_THEMES, EventScenery } from "./eventThemes";
+import popupPhoto from "@/assets/couple-ruthvika-vivek.jpg";
 import { copyText } from "@/lib/clipboard";
 import { submitRsvp } from "@/lib/rsvp";
 
@@ -53,7 +49,7 @@ function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`w-full px-5 py-16 ${className}`}>
+    <section id={id} className={`w-full px-5 py-24 ${className}`}>
       <Reveal>{children}</Reveal>
     </section>
   );
@@ -94,351 +90,6 @@ function BotanicalWatermark() {
         <path d="M112 96 c-2 -12 4 -20 14 -24 c2 10 -4 18 -14 24" />
       </g>
     </svg>
-  );
-}
-
-/* ---------------------------------- story ---------------------------------- */
-
-// TODO(content): captions are drawn from the chapter copy — change freely.
-const CHAPTERS = [
-  {
-    label: "Chapter I",
-    title: "The Beginning",
-    body: [
-      "What began as a casual camping trip with friends to Deception Pass became the first page of our story. Between endless conversations, laughter around the campfire, and a sky full of stars, two strangers from the same college finally found each other.",
-    ],
-    quote: "Sometimes the best stories begin when nothing is planned.",
-    photos: [
-      {
-        src: storyCamping,
-        caption: "Deception Pass",
-        alt: "Friends gathered around a campfire at sunset, tents and a bridge over the water behind them",
-      },
-    ],
-  },
-  {
-    label: "Chapter II",
-    title: "Three Little Words",
-    body: [
-      "A drive to the Seattle airport.\nOne last hug before goodbye.",
-      "He smiled, held her close, and quietly said,",
-      "“I love you.”",
-      "Then he simply walked away.",
-      "She carried those words all the way home…\nand when her heart was ready,",
-      "she said “Yes.”",
-    ],
-    photos: [
-      {
-        src: storyAirport,
-        caption: "Seattle airport",
-        alt: "The couple holding each other at the airport departures kerb at sunset",
-      },
-    ],
-  },
-  {
-    label: "Chapter III",
-    title: "Our Sunday Tradition",
-    body: [
-      "Some love stories are written through grand gestures.",
-      "Ours was written in slow Sunday mornings.",
-      "A picnic mat, a camping chair, a good book, coffee in hand, and Mount Rainier watching over us.",
-      "No plans.\nNo rush.\nJust us.",
-    ],
-    quote: "Home was never a place—it was wherever we were together.",
-    photos: [
-      {
-        src: storyOodenny,
-        caption: "Mount Rainier",
-        alt: "The couple on a picnic blanket under a tree, a snow-capped mountain in the distance",
-      },
-    ],
-  },
-];
-
-/** Every print in running order, each tagged with the chapter it belongs to. */
-const PRINTS = CHAPTERS.flatMap((chapter, ci) =>
-  chapter.photos.map((photo) => ({ ...photo, chapter: ci })),
-);
-
-/** How far each print sits below the one before it in the finished pile. */
-const FAN = 13;
-const TILTS = [-1.6, 1.3, -0.9, 1.7, -1.2, 0.8];
-
-/**
- * How much of a print's approach the chapter copy hands over across, in px.
- * The copy is tied to this stretch rather than to the moment the print lands,
- * so the words travel with the photo instead of snapping once it has covered
- * the one beneath.
- */
-const HANDOVER = 300;
-/** How far the copy drifts as it leaves, in px. */
-const SLIDE = 34;
-/**
- * The run-out at the end of the deck, in px. Once the last print has parked it
- * stops moving against the viewport, so the closing chapter has nothing left to
- * follow — this measures the deck's remaining room instead and lets chapter
- * three leave the way the others did, rather than blinking out when the sticky
- * header lets go.
- */
-const EXIT = 340;
-
-function Story() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const deckRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [deckTop, setDeckTop] = useState(420);
-  /** Fractional position through the prints — 1.4 means print 1, 40% of the way to 2. */
-  const [pos, setPos] = useState(0);
-  /** 0 while the deck holds, rising to 1 as it runs out and the copy leaves. */
-  const [exit, setExit] = useState(0);
-  const [lightbox, setLightbox] = useState<number | null>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  // The pinned header's height decides where the deck starts, and it changes
-  // with the longest chapter's copy — so measure it rather than guess.
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const measure = () => setDeckTop(el.offsetHeight + 6);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // How far along the pile we are, as a fraction rather than a whole number, so
-  // the copy can move with the print that is still on its way in.
-  useEffect(() => {
-    let frame = 0;
-    const read = () => {
-      let p = 0;
-      cardRefs.current.forEach((el, i) => {
-        if (!el) return;
-        // Each print parks at its own height in the fan, so measure against
-        // that rather than one shared line — otherwise only the first print
-        // ever registers and the copy never leaves chapter one.
-        const remaining = el.getBoundingClientRect().top - (deckTop + i * FAN);
-        p += Math.min(1, Math.max(0, (HANDOVER - remaining) / HANDOVER));
-      });
-      // The first print is already parked when the deck opens, so the running
-      // total sits one ahead of the index we want.
-      setPos(Math.max(0, p - 1));
-
-      // How close the deck is to giving up its sticky hold.
-      const deck = deckRef.current;
-      if (deck) {
-        const room = deck.getBoundingClientRect().bottom - deckTop;
-        setExit(Math.min(1, Math.max(0, (EXIT - room) / EXIT)));
-      }
-    };
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(read);
-    };
-    read();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [deckTop]);
-
-  const shown = lightbox !== null ? PRINTS[lightbox] : null;
-
-  // The two prints either side of where we are, and the chapters they belong
-  // to. When both sit in the same chapter there is nothing to hand over.
-  const lower = Math.min(PRINTS.length - 1, Math.floor(pos));
-  const upper = Math.min(PRINTS.length - 1, lower + 1);
-  const frac = Math.min(1, Math.max(0, pos - lower));
-  const leaving = PRINTS[lower].chapter;
-  const arriving = PRINTS[upper].chapter;
-  const active = frac < 0.5 ? leaving : arriving;
-
-  /**
-   * Opacity and drift for one chapter's copy at the current scroll position.
-   * Guests who ask for reduced motion still get the cross-fade, which carries
-   * the meaning, but none of the travel.
-   */
-  const chapterMotion = (i: number) => {
-    const drift = reducedMotion ? 0 : SLIDE;
-
-    let opacity: number;
-    let shift: number;
-    if (leaving === arriving) {
-      opacity = i === leaving ? 1 : 0;
-      shift = 0;
-    } else if (i === leaving) {
-      opacity = 1 - frac;
-      shift = -drift * frac;
-    } else if (i === arriving) {
-      opacity = frac;
-      shift = drift * (1 - frac);
-    } else {
-      opacity = 0;
-      shift = 0;
-    }
-
-    // The run-out at the end of the deck. Only ever non-zero once the last
-    // print has parked, so in practice this is the closing chapter leaving.
-    return { opacity: opacity * (1 - exit), shift: shift - drift * exit };
-  };
-
-  return (
-    <section id="story" className="relative">
-      {/* The invitation inks itself in and lands on "our story", which is why
-          there is no separate heading below — the line above is the title. */}
-      <ScrollReveal />
-
-      {/* Scroll target for the menu's Story link. Landing here pins the header
-          and parks the first print, so chapter one arrives fully composed —
-          the sticky header itself cannot be a target, since once stuck it
-          reports the top of the viewport rather than its place in the page. */}
-      <span id="chapter-one" aria-hidden="true" className="block" />
-
-      {/* Pinned: the chapter copy cross-fades as each print reaches the pile */}
-      <div
-        ref={headerRef}
-        className="sticky top-0 z-30 px-5 pb-5 text-center"
-        style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 4.5rem)",
-          // Opaque where the copy sits so the invitation lines pass cleanly
-          // behind it, fading out at the lower edge to avoid a hard seam
-          // across the backdrop.
-          background:
-            "linear-gradient(180deg, var(--background) 0%, var(--background) 84%, transparent 100%)",
-        }}
-      >
-        <div className="relative min-h-[17rem]">
-          {CHAPTERS.map((chapter, i) => {
-            const { opacity, shift } = chapterMotion(i);
-            return (
-            <div
-              key={chapter.label}
-              aria-hidden={i !== active}
-              className="absolute inset-x-0 top-0"
-              style={{
-                opacity,
-                // Tied to scroll rather than to a timed fade, so the words leave
-                // at exactly the pace of the photo pushing them out. "none" and
-                // not translateY(0): a transform would make this the containing
-                // block for any fixed-position child.
-                transform: shift === 0 ? "none" : `translateY(${shift.toFixed(1)}px)`,
-                pointerEvents: i === active ? "auto" : "none",
-              }}
-            >
-              <h3 className="font-display text-[1.4rem] font-semibold text-foreground">
-                {chapter.label}: {chapter.title}
-              </h3>
-              <div className="mx-auto mt-3 max-w-[21rem] space-y-2 font-body text-[0.88rem] leading-[1.55] whitespace-pre-line text-muted-foreground">
-                {chapter.body.map((para) => (
-                  <p key={para}>{para}</p>
-                ))}
-              </div>
-              {chapter.quote && (
-                <p className="mx-auto mt-3 max-w-[19rem] font-display text-[1rem] leading-snug text-foreground/75 italic">
-                  “{chapter.quote}”
-                </p>
-              )}
-            </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* The pile: each print parks a little lower, so the ones already down
-          stay visible as edges above the newest one. */}
-      <div id="gallery" ref={deckRef} className="px-6">
-        {PRINTS.map((print, i) => (
-          <div
-            key={print.src}
-            ref={(el) => {
-              cardRefs.current[i] = el;
-            }}
-            className="sticky mx-auto w-[86%]"
-            style={{ top: deckTop + i * FAN, zIndex: 10 + i, marginBottom: "12vh" }}
-          >
-            <button
-              type="button"
-              onClick={() => setLightbox(i)}
-              aria-label={`Enlarge ${print.caption}`}
-              className="block w-full rounded-[18px] bg-pearl p-3 pb-3.5 transition-transform active:scale-[0.99]"
-              style={{
-                transform: `rotate(${TILTS[i % TILTS.length]}deg)`,
-                boxShadow: "0 14px 30px -16px oklch(0.28 0.02 60 / 0.35)",
-              }}
-            >
-              <img
-                src={print.src}
-                alt={print.alt}
-                loading={i === 0 ? "eager" : "lazy"}
-                width={1000}
-                height={750}
-                className="w-full rounded-[10px] object-cover"
-                style={{ aspectRatio: "4 / 3" }}
-              />
-              <span className="mt-3 block text-center font-body text-[0.78rem] text-muted-foreground">
-                {print.caption}
-              </span>
-            </button>
-          </div>
-        ))}
-
-        {/* Holds the finished pile on screen. The prints stay stuck only while
-            this container has room left, and the last one has just its own
-            margin — without this the third overlap flashes past while the
-            second is held for a full card's worth of scrolling. */}
-        <div aria-hidden="true" className="h-[42vh]" />
-      </div>
-
-      <Modal open={shown !== null} onClose={() => setLightbox(null)} label="Photo viewer">
-        {shown && (
-          <div className="flex flex-col items-center gap-4 pt-2 pb-4">
-            <img
-              src={shown.src}
-              alt={shown.alt}
-              width={1000}
-              height={750}
-              className="w-full rounded-[12px] object-cover"
-              style={{ aspectRatio: "4 / 3" }}
-            />
-            <p className="font-body text-sm text-muted-foreground">{shown.caption}</p>
-            <div className="flex items-center gap-8">
-              <button
-                type="button"
-                aria-label="Previous photo"
-                onClick={() =>
-                  setLightbox((i) => (i === null ? i : (i - 1 + PRINTS.length) % PRINTS.length))
-                }
-                className="flex size-10 items-center justify-center rounded-full bg-secondary text-foreground/70"
-              >
-                ←
-              </button>
-              <span className="font-body text-xs text-muted-foreground">
-                {(lightbox ?? 0) + 1} / {PRINTS.length}
-              </span>
-              <button
-                type="button"
-                aria-label="Next photo"
-                onClick={() => setLightbox((i) => (i === null ? i : (i + 1) % PRINTS.length))}
-                className="flex size-10 items-center justify-center rounded-full bg-secondary text-foreground/70"
-              >
-                →
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </section>
   );
 }
 
@@ -509,24 +160,41 @@ function JoinUs() {
 
 /* ---------------------------------- events ---------------------------------- */
 
-/**
- * How far the artwork wash is pulled back behind the event cards. Applied as a
- * single multiplier rather than folded into each event's own cardOpacity, so
- * the values tuned against the artwork keep their relationship to one another.
- */
-const WASH = 0.45;
+/** Fades its children in each time it mounts — used when the day changes. */
+function FadeIn({ children }: { children: ReactNode }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+  return (
+    <div
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "none" : "translateY(10px)",
+        transition: "opacity 500ms ease, transform 500ms cubic-bezier(0.22,1,0.36,1)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /**
- * The schedule, one day at a time. Tabs keep it to a single screen while still
- * giving each event room, and every card opens a sheet with the full details.
+ * The schedule, one day at a time. Guests pick a date and that day's
+ * celebrations are listed beneath it — name and venue on the left, the time
+ * set apart on the right, like a printed order of events.
  */
-function EventsSection() {
+export function EventsSection({
+  heading,
+  // The couple's rings photograph, faded behind an ivory veil.
+  popupBackground = "photo",
+  // One slim bar split three ways, the chosen day filled in bronze.
+  dateStyle = "segmented",
+}: { heading?: ReactNode; popupBackground?: PopupBackground; dateStyle?: DateStyle } = {}) {
   const [dayIdx, setDayIdx] = useState(0);
-  const [open, setOpen] = useState<{ event: WeddingEvent; day: EventDay } | null>(null);
-  const directions = open ? venueMapsHref(open.event.venue) : null;
-  const look = open ? EVENT_THEMES[open.event.themeKey] : null;
-  const accent = look?.accent;
   const activeDay = EVENT_DAYS[dayIdx];
+  const [open, setOpen] = useState<{ event: WeddingEvent; day: EventDay } | null>(null);
 
   return (
     <section
@@ -534,253 +202,603 @@ function EventsSection() {
       className="flex min-h-[100dvh] w-full flex-col justify-center px-6"
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 5rem)",
-        paddingBottom: "calc(env(safe-area-inset-bottom) + 2rem)",
+        // Generous room below, so Additional details reads as a new section.
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
       }}
     >
       <Reveal>
-        <h2
-          className="text-center font-display leading-none text-foreground"
-          style={{ fontSize: "clamp(1.9rem, 8.6vw, 2.4rem)" }}
-        >
-          The Wedding Soirée
-        </h2>
-        <Ornament className="mt-4 mb-8" />
-
-        <div className="flex justify-center gap-2">
-          {EVENT_DAYS.map((d, i) => {
-            const on = i === dayIdx;
-            return (
-              <button
-                key={d.date}
-                type="button"
-                onClick={() => setDayIdx(i)}
-                aria-pressed={on}
-                className="rounded-full px-5 py-3 font-body text-[0.82rem] font-semibold tracking-[0.08em] uppercase transition-colors"
-                style={{
-                  background: on ? "var(--bronze)" : "color-mix(in oklab, var(--ivory) 62%, transparent)",
-                  color: on ? "var(--primary-foreground)" : "var(--muted-foreground)",
-                  boxShadow: on ? "0 6px 16px -8px oklch(0.4 0.06 60 / 0.5)" : "none",
-                  border: `1px solid ${on ? "transparent" : "color-mix(in oklab, var(--gold) 38%, transparent)"}`,
-                }}
-              >
-                {d.date.replace(" October", " Oct")}
-              </button>
-            );
-          })}
-        </div>
-        <p className="mt-4 text-center font-body text-[0.62rem] tracking-[0.2em] uppercase text-muted-foreground">
-          {activeDay.weekday}
-        </p>
-
-        <div className="mt-8 flex flex-col gap-4">
-          {activeDay.events.map((event) => (
-            <button
-              key={event.slug}
-              type="button"
-              onClick={() => setOpen({ event, day: activeDay })}
-              aria-label={`${event.name} — see date, venue and dress code`}
-              className="relative overflow-hidden rounded-2xl px-6 py-7 text-center transition-all active:scale-[0.99]"
+        {heading ?? (
+          <div className="relative py-6 text-center">
+            {/* "Our Pelli Gola", in Telugu. */}
+            <h2
+              lang="te"
+              aria-label="Maa Pelli Gola: our wedding celebrations"
+              className="relative leading-none text-bronze"
+              // Explicit 400: the global h2 rule asks for 600, which Suravaram
+              // doesn't have, so the browser would fake a bold.
+              style={{ fontFamily: '"Suravaram", serif', fontSize: "clamp(2.4rem, 11vw, 2.9rem)", fontWeight: 400 }}
+            >
+              మా పెళ్లి గోల
+            </h2>
+            {/* One line of fine capitals, sized so it always fits the screen. */}
+            <p
+              className="relative mt-[0.6rem] font-display leading-none whitespace-nowrap uppercase"
               style={{
-                // Near-solid rather than translucent: the artwork wash below
-                // supplies the warmth, and a see-through ground on top of it
-                // left the event names muddy.
-                background: "color-mix(in oklab, var(--ivory) 94%, transparent)",
-                backdropFilter: "blur(3px)",
-                WebkitBackdropFilter: "blur(3px)",
-                border: "1px solid color-mix(in oklab, var(--gold) 34%, transparent)",
-                boxShadow: "0 10px 26px -16px oklch(0.32 0.03 60 / 0.4)",
+                fontSize: "min(0.92rem, calc((100vw - 3.5rem) / 28))",
+                fontWeight: 500,
+                letterSpacing: "0.3em",
+                color: "color-mix(in oklab, var(--ink-strong) 62%, transparent)",
               }}
             >
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-px"
-                style={{ background: "var(--gradient-gold)" }}
-              />
+              Your calendar for this November
+            </p>
+          </div>
+        )}
+        <Ornament className="mt-4 mb-8" />
 
-              {/* The event's own artwork washed across the whole card rather
-                  than stamped into a circle — six repeated circles down the
-                  column read as clutter. Cropped per event, since these
-                  artworks all leave their middles bare. */}
-              {EVENT_THEMES[event.themeKey].image && (
-                <img
-                  src={EVENT_THEMES[event.themeKey].image}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-                  style={{
-                    opacity: (EVENT_THEMES[event.themeKey].cardOpacity ?? 0.2) * WASH,
-                    objectPosition: EVENT_THEMES[event.themeKey].cardPosition ?? "center bottom",
+        <DayPicker style={dateStyle} dayIdx={dayIdx} onPick={setDayIdx} />
+
+        <FadeIn key={activeDay.date}>
+          <div
+            className="mt-8"
+            style={{ borderTop: "1px solid color-mix(in oklab, var(--gold) 40%, transparent)" }}
+          >
+            {activeDay.events.map((event) => {
+              const directions = venueMapsHref(event.venue);
+              const isMain = Boolean(event.timeLabel);
+              return (
+                // The whole row opens the details; a div rather than a button so
+                // the Directions link inside it stays a real link.
+                <div
+                  key={event.slug}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${event.name}: see details`}
+                  onClick={() => setOpen({ event, day: activeDay })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setOpen({ event, day: activeDay });
+                    }
                   }}
-                />
-              )}
+                  className="grid cursor-pointer grid-cols-[1fr_auto] items-baseline gap-x-4 py-7 transition-opacity active:opacity-70"
+                  style={{ borderBottom: "1px solid color-mix(in oklab, var(--gold) 40%, transparent)" }}
+                >
+                  <div className="min-w-0">
+                    <p className="font-body text-[0.54rem] font-medium tracking-[0.36em] uppercase text-muted-foreground">
+                      {activeDay.weekday} · {activeDay.date}
+                    </p>
+                    <h3
+                      className={`mt-2 font-display leading-none text-ink-strong ${isMain ? "text-[2.2rem] font-medium" : "text-[1.7rem]"}`}
+                    >
+                      {event.name}
+                    </h3>
+                    <p className="mt-2 font-display text-[1rem] text-muted-foreground italic">
+                      {event.venue.name}
+                      {event.venue.address ? `, ${event.venue.address}` : ""}
+                    </p>
+                    {event.note && (
+                      <p className="mt-0.5 font-display text-[1rem] text-muted-foreground italic">{event.note}</p>
+                    )}
+                    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen({ event, day: activeDay });
+                        }}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-body text-[0.54rem] font-medium tracking-[0.26em] uppercase text-bronze-deep transition-colors active:scale-[0.97]"
+                        style={{
+                          background: "transparent",
+                          border: "1px solid color-mix(in oklab, var(--gold) 70%, transparent)",
+                        }}
+                      >
+                        View details <span aria-hidden="true">→</span>
+                      </button>
+                      {directions && (
+                        <a
+                          href={directions}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          className="inline-block font-body text-[0.56rem] font-medium tracking-[0.28em] uppercase text-bronze-deep underline underline-offset-[6px]"
+                          style={{
+                            textDecorationColor: "color-mix(in oklab, var(--gold) 70%, transparent)",
+                            textDecorationThickness: "1px",
+                          }}
+                        >
+                          Directions
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {event.timeLabel && (
+                      <p className="font-body text-[0.5rem] font-medium tracking-[0.3em] uppercase text-bronze-deep">
+                        {event.timeLabel}
+                      </p>
+                    )}
+                    <p
+                      className={`font-display leading-none font-light whitespace-nowrap text-ink-strong ${isMain ? "text-[1.9rem]" : "text-[1.4rem]"}`}
+                    >
+                      {event.time}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </FadeIn>
 
-              {/* Lifted clear of the wash behind it. */}
-              <span className="relative block">
-                {/* Name and theme only — time, venue and dress code live in the
-                    sheet behind "View details". */}
-                <span className="block font-display text-[1.6rem] font-bold tracking-[0.01em] text-ink-strong">
-                  {event.name}
-                </span>
-                {event.theme && (
-                  <span className="mt-1 block font-script text-lg text-bronze-deep">{event.theme}</span>
-                )}
-
-                <span aria-hidden="true" className="rule-gold mx-auto mt-4 mb-4 block w-16" />
-
-                <span className="inline-flex items-center gap-1.5 font-body text-[0.62rem] font-medium tracking-[0.16em] uppercase text-bronze-deep">
-                  View details <span aria-hidden="true">→</span>
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-
-
-        <div className="mt-5 text-center">
+        <div className="mt-8 text-center">
           <AddToCalendar compact event={FULL_WEDDING_CAL} />
         </div>
       </Reveal>
 
-      <Modal
-        open={open !== null}
-        onClose={() => setOpen(null)}
-        label={open?.event.name ?? "Event"}
-        variant="full"
-        panelStyle={look?.surface}
-        backdrop={open ? <EventScenery theme={open.event.themeKey} /> : null}
+      <EventDetails open={open} onClose={() => setOpen(null)} background={popupBackground} />
+    </section>
+  );
+}
+
+/** How the day selector is drawn — see DayPicker. */
+export type DateStyle = "pills" | "small" | "underline" | "numerals" | "segmented";
+
+/** The row of dates that chooses which day's celebrations are listed. */
+function DayPicker({
+  style,
+  dayIdx,
+  onPick,
+}: {
+  style: DateStyle;
+  dayIdx: number;
+  onPick: (i: number) => void;
+}) {
+  const short = (date: string) => date.replace(" November", " Nov");
+  const gold = (pct: number) => `color-mix(in oklab, var(--gold) ${pct}%, transparent)`;
+
+  if (style === "underline") {
+    // Plain text tabs; the chosen day is inked and underlined in gold.
+    return (
+      <div className="flex justify-center gap-7">
+        {EVENT_DAYS.map((d, i) => {
+          const on = i === dayIdx;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              onClick={() => onPick(i)}
+              aria-pressed={on}
+              className="pb-1.5 font-body text-[0.66rem] font-medium tracking-[0.24em] uppercase transition-colors"
+              style={{
+                color: on ? "var(--ink-strong)" : "var(--muted-foreground)",
+                borderBottom: `1px solid ${on ? "var(--bronze)" : "transparent"}`,
+              }}
+            >
+              {short(d.date)}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (style === "numerals") {
+    // The date itself as the button: a light numeral over its weekday.
+    return (
+      <div className="flex justify-center gap-8">
+        {EVENT_DAYS.map((d, i) => {
+          const on = i === dayIdx;
+          const [num] = d.date.split(" ");
+          return (
+            <button
+              key={d.date}
+              type="button"
+              onClick={() => onPick(i)}
+              aria-pressed={on}
+              aria-label={`${d.weekday}, ${d.date}`}
+              className="flex flex-col items-center transition-opacity"
+              style={{ opacity: on ? 1 : 0.45 }}
+            >
+              <span
+                className="font-display text-[2.1rem] leading-none font-light"
+                style={{ color: on ? "var(--bronze-deep)" : "var(--ink-strong)" }}
+              >
+                {num}
+              </span>
+              <span className="mt-1 font-body text-[0.5rem] font-medium tracking-[0.26em] uppercase text-muted-foreground">
+                {d.weekday.slice(0, 3)} · Nov
+              </span>
+              <span
+                aria-hidden="true"
+                className="mt-2 size-1 rotate-45 transition-opacity"
+                style={{ background: "var(--bronze)", opacity: on ? 1 : 0 }}
+              />
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (style === "segmented") {
+    // One slim bar, split three ways; the chosen day is a filled segment.
+    return (
+      <div
+        className="mx-auto flex w-fit rounded-full p-1"
+        style={{ border: `1px solid ${gold(45)}`, background: "color-mix(in oklab, var(--ivory) 60%, transparent)" }}
       >
-        {open && (
-          <div
-            className="relative flex min-h-full flex-col pt-8 pb-4 text-center"
-            // contentStyle lets a theme push its own copy clear of whatever its
-            // artwork puts in the way — the wedding uses it to start below the
-            // banana fronds rather than across them.
-            style={{ color: look?.ink, ...look?.contentStyle }}
+        {EVENT_DAYS.map((d, i) => {
+          const on = i === dayIdx;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              onClick={() => onPick(i)}
+              aria-pressed={on}
+              className="rounded-full px-4 py-1.5 font-body text-[0.6rem] font-medium tracking-[0.18em] uppercase transition-colors"
+              style={{
+                background: on ? "var(--bronze)" : "transparent",
+                color: on ? "var(--primary-foreground)" : "var(--muted-foreground)",
+              }}
+            >
+              {short(d.date)}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // "pills" (the original) and "small", a slimmer version of it.
+  const small = style === "small";
+  return (
+    <div className={`flex justify-center ${small ? "gap-1.5" : "gap-2"}`}>
+      {EVENT_DAYS.map((d, i) => {
+        const on = i === dayIdx;
+        return (
+          <button
+            key={d.date}
+            type="button"
+            onClick={() => onPick(i)}
+            aria-pressed={on}
+            className={`rounded-full font-body uppercase transition-colors ${
+              small
+                ? "px-3.5 py-1.5 text-[0.62rem] font-medium tracking-[0.16em]"
+                : "px-5 py-3 text-[0.82rem] font-semibold tracking-[0.08em]"
+            }`}
+            style={{
+              background: on ? "var(--bronze)" : "color-mix(in oklab, var(--ivory) 62%, transparent)",
+              color: on ? "var(--primary-foreground)" : "var(--muted-foreground)",
+              boxShadow: on && !small ? "0 6px 16px -8px oklch(0.4 0.06 60 / 0.5)" : "none",
+              border: `1px solid ${on ? "transparent" : gold(38)}`,
+            }}
           >
-            <div className="my-auto w-full">
-              <div className="relative w-full">
-                <h3 className="font-display text-[2.1rem] leading-tight">{open.event.name}</h3>
-                {open.event.theme && (
-                  <p className="mt-1 font-script text-2xl" style={{ color: accent }}>
-                    {open.event.theme}
-                  </p>
-                )}
-                <span
-                  aria-hidden="true"
-                  className="mx-auto mt-5 mb-8 block h-px w-24"
-                  style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
-                />
-              </div>
+            {short(d.date)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-              {/* The formal invitation, where one is set. Each family gets its
-                  own block, joined by "and", the way a card would set it —
-                  running it as one sentence would bury the names. */}
-              {open.event.invitation && (
-                <div className="mb-8 text-center">
-                  <p
-                    className="mx-auto max-w-[19rem] font-body text-[0.82rem] leading-relaxed"
-                    style={{ color: look?.inkSoft }}
-                  >
-                    {open.event.invitation.lead}
-                  </p>
+/** How the event pop-up is backed — see EventDetails. */
+export type PopupBackground = "art" | "ivory" | "wash" | "photo" | "faint";
 
-                  {open.event.invitation.parties.map((party, i) => (
-                    <div key={party.name}>
-                      {i > 0 && (
-                        <p
-                          className="my-3 font-display text-lg italic"
-                          style={{ color: look?.inkSoft }}
-                        >
-                          and
-                        </p>
-                      )}
-                      <p className="mt-3 font-display text-[1.45rem] leading-tight">{party.name}</p>
-                      <p
-                        className="mx-auto mt-1 max-w-[19rem] font-body text-[0.78rem] leading-relaxed"
-                        style={{ color: look?.inkSoft }}
-                      >
-                        {party.parents}
-                      </p>
-                    </div>
-                  ))}
+/** A gentle colour per event for the "wash" background. */
+const WASHES: Record<string, { ground: string; ink: string; inkSoft: string; accent: string }> = {
+  carnival: {
+    ground: "radial-gradient(130% 80% at 50% 0%, oklch(0.96 0.06 95) 0%, oklch(0.93 0.08 88) 60%, oklch(0.9 0.09 82) 100%)",
+    ink: "oklch(0.2 0.03 60)",
+    inkSoft: "oklch(0.32 0.04 62)",
+    accent: "oklch(0.5 0.12 60)",
+  },
+  masquerade: {
+    ground: "radial-gradient(130% 80% at 50% 0%, oklch(0.3 0.06 268) 0%, oklch(0.22 0.06 266) 60%, oklch(0.18 0.05 264) 100%)",
+    ink: "oklch(0.95 0.012 88)",
+    inkSoft: "oklch(0.82 0.02 90)",
+    accent: "oklch(0.8 0.07 85)",
+  },
+  pellikuthuru: {
+    ground: "radial-gradient(130% 80% at 50% 0%, oklch(0.97 0.025 140) 0%, oklch(0.94 0.04 140) 60%, oklch(0.91 0.05 138) 100%)",
+    ink: "oklch(0.2 0.03 150)",
+    inkSoft: "oklch(0.32 0.04 148)",
+    accent: "oklch(0.45 0.09 145)",
+  },
+  telugu: {
+    ground: "radial-gradient(130% 80% at 50% 0%, oklch(0.97 0.02 70) 0%, oklch(0.94 0.035 50) 60%, oklch(0.91 0.045 40) 100%)",
+    ink: "oklch(0.2 0.05 30)",
+    inkSoft: "oklch(0.32 0.05 32)",
+    accent: "oklch(0.42 0.14 28)",
+  },
+};
 
-                  <span
-                    aria-hidden="true"
-                    className="mx-auto mt-8 block h-px w-16"
-                    style={{ background: accent, opacity: 0.5 }}
-                  />
-                </div>
-              )}
+/** A fine gold frame inset from the card's edge, for the plainer backgrounds. */
+function GoldFrame({ color = "var(--gold)" }: { color?: string }) {
+  return (
+    <span
+      className="absolute inset-3 rounded-[20px]"
+      style={{ border: `1px solid color-mix(in oklab, ${color} 60%, transparent)` }}
+    />
+  );
+}
 
-              {/* Set as invitation lines rather than a labelled list — the
-                  artwork behind it reads as stationery, and labels fought it. */}
-              <div className="space-y-5 text-center">
-                <p className="font-display text-xl leading-snug">
-                  {open.day.weekday}, {open.day.date} {WEDDING_YEAR}
+/**
+ * One celebration in full: its own illustrated setting behind it, the details
+ * set like an invitation card, and buttons for directions and the calendar.
+ */
+function EventDetails({
+  open,
+  onClose,
+  background = "art",
+}: {
+  open: { event: WeddingEvent; day: EventDay } | null;
+  onClose: () => void;
+  background?: PopupBackground;
+}) {
+  // Kept after closing so the panel still has content while it slides away.
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) setShown(open);
+  }, [open]);
+
+  const event = shown?.event;
+  const day = shown?.day;
+  const theme = event ? EVENT_THEMES[event.themeKey] : null;
+
+  // The ground behind the details, and the ink that reads on it.
+  let look: { ink: string; inkSoft: string; accent: string } | null = theme;
+  let panelStyle = theme?.surface;
+  let backdrop: ReactNode = event ? <EventScenery theme={event.themeKey} /> : null;
+  let padTop = event?.themeKey === "telugu" ? "pt-20" : "pt-12";
+
+  if (event && theme && background !== "art") {
+    const neutral = { ink: "oklch(0.2 0.02 60)", inkSoft: "oklch(0.34 0.025 62)", accent: "var(--bronze-deep)" };
+    padTop = "pt-8";
+    if (background === "ivory") {
+      look = neutral;
+      panelStyle = {
+        background:
+          "radial-gradient(130% 80% at 50% 0%, oklch(0.985 0.008 85) 0%, oklch(0.965 0.014 82) 60%, oklch(0.95 0.02 80) 100%)",
+      };
+      backdrop = <GoldFrame />;
+    } else if (background === "wash") {
+      const w = WASHES[event.themeKey] ?? WASHES.telugu;
+      look = w;
+      panelStyle = { background: w.ground };
+      backdrop = <GoldFrame color={w.accent} />;
+    } else if (background === "photo") {
+      look = neutral;
+      panelStyle = { background: "var(--ivory)" };
+      backdrop = (
+        <>
+          <img
+            src={popupPhoto}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: "center 30%", filter: "grayscale(0.2)" }}
+          />
+          <span
+            className="absolute inset-0"
+            style={{ background: "color-mix(in oklab, var(--ivory) 84%, transparent)" }}
+          />
+          <GoldFrame />
+        </>
+      );
+    } else if (background === "faint") {
+      // The same artwork, washed well back behind a veil of the card's own ground.
+      const dark = event.themeKey === "masquerade";
+      padTop = event.themeKey === "telugu" ? "pt-20" : "pt-12";
+      backdrop = (
+        <>
+          <EventScenery theme={event.themeKey} />
+          <span
+            className="absolute inset-0"
+            style={{
+              background: dark
+                ? "color-mix(in oklab, oklch(0.2 0.06 266) 62%, transparent)"
+                : "color-mix(in oklab, oklch(0.97 0.012 85) 66%, transparent)",
+            }}
+          />
+        </>
+      );
+    }
+  }
+
+  const accent = look?.accent;
+  const directions = event ? venueMapsHref(event.venue) : null;
+  const place = event ? [event.venue.name, event.venue.address].filter(Boolean).join(", ") : "";
+
+  return (
+    <Modal
+      open={open !== null}
+      onClose={onClose}
+      label={event?.name ?? "Event"}
+      variant="card"
+      panelStyle={panelStyle}
+      backdrop={backdrop}
+    >
+      {event && day && look && (
+        // Starts clear of the lanterns, arch and emblem at the top of each artwork.
+        <div className={`relative text-center ${padTop}`} style={{ color: look.ink }}>
+          <div className="w-full">
+            <p
+              className="font-body text-[0.56rem] font-medium tracking-[0.34em] uppercase"
+              style={{ color: look.inkSoft }}
+            >
+              {day.weekday} · {day.date} {WEDDING_YEAR}
+            </p>
+            <h3
+              className={`mx-auto mt-3 max-w-[17rem] font-display font-medium ${
+                event.fullName ? "text-[1.85rem] leading-[1.1]" : "text-[2.3rem] leading-none"
+              }`}
+            >
+              {event.fullName ?? event.name}
+            </h3>
+            {event.teluguName && (
+              <p
+                lang="te"
+                className="mt-2 text-[1.35rem] leading-snug"
+                style={{ fontFamily: '"Suravaram", serif', fontWeight: 400, color: accent }}
+              >
+                {event.teluguName}
+              </p>
+            )}
+            <span
+              aria-hidden="true"
+              className="mx-auto mt-5 mb-5 block h-px w-20"
+              style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+            />
+
+            {/* The formal invitation, where one is set — the wedding. Leads,
+                straight after the title, before anything else is said. */}
+            {event.invitation && (
+              <div className="mb-6">
+                <p
+                  className="mx-auto max-w-[16rem] font-display text-[1.02rem] leading-snug italic"
+                  style={{ color: look.inkSoft }}
+                >
+                  {event.invitation.lead}
                 </p>
-
-                <p className="font-display text-xl">{open.event.time}</p>
-
+                <p className="mt-3 font-display text-[1.7rem] leading-tight">
+                  {event.invitation.parties.map((p) => p.name).join(" & ")}
+                </p>
                 <span
                   aria-hidden="true"
-                  className="mx-auto block h-px w-12"
+                  className="mx-auto mt-6 block h-px w-12"
                   style={{ background: accent, opacity: 0.5 }}
                 />
+              </div>
+            )}
 
-                <p className="font-display text-xl">{open.event.venue.name}</p>
-
-                {/* Nothing stands in for a missing map: the venue line above
-                    already says it is still to be announced. */}
-                {directions && (
-                  <div>
-                    <a
-                      href={directions}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 font-body text-sm underline underline-offset-4"
-                      style={{ color: accent, textDecorationColor: accent }}
-                    >
-                      {open.event.venue.address ?? "Open in Maps"}
-                      <span aria-hidden="true">↗</span>
-                    </a>
-                  </div>
+            {/* A few lines about the celebration — English, then Telugu. */}
+            {(event.about || event.aboutTe) && (
+              <div className="mx-auto mb-6 max-w-[18rem] space-y-3">
+                {event.about && (
+                  <p className="font-display text-[1.02rem] leading-snug" style={{ color: look.inkSoft }}>
+                    {event.about}
+                  </p>
                 )}
-
-                {/* No hairline here: the block rules itself, top and bottom,
-                    and a second one directly above would stack. */}
-                {open.event.dressCode && (
-                  <div className="pt-1">
-                    <DressCodeArt
-                      dressCode={open.event.dressCode}
-                      ink={look?.ink}
-                      inkSoft={look?.inkSoft}
-                      accent={accent}
-                    />
-                  </div>
+                {event.aboutTe && (
+                  <p
+                    lang="te"
+                    className="text-[0.92rem] leading-relaxed"
+                    style={{ fontFamily: '"Suravaram", serif', fontWeight: 400, color: look.inkSoft }}
+                  >
+                    {event.aboutTe}
+                  </p>
                 )}
               </div>
+            )}
 
-              {/* No per-event calendar button: the one under the schedule adds
-                  all three days at once, which is what guests actually want.
-                  Each celebration links to its own shared folder. */}
-              {open.event.photosUrl && (
-                <div className="mt-10 flex flex-col items-center gap-3">
-                  <a
-                    href={open.event.photosUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-[var(--gold)]/45 bg-ivory px-7 py-3.5 font-body text-[0.66rem] font-medium tracking-[0.24em] uppercase text-bronze transition-all hover:shadow-md active:scale-[0.98]"
-                  >
-                    Share your photos
-                  </a>
-                </div>
+            {/* The key moments of the ceremony. */}
+            {event.rituals && (
+              <div className="mx-auto mb-7 max-w-[17rem]">
+                <p
+                  className="font-body text-[0.54rem] font-medium tracking-[0.36em] uppercase"
+                  style={{ color: accent }}
+                >
+                  The rituals
+                </p>
+                <ul className="mt-3 space-y-2.5">
+                  {event.rituals.map((r) => (
+                    <li key={r.name} className="leading-snug">
+                      <span className="flex items-center justify-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="size-1 shrink-0 rotate-45"
+                          style={{ background: accent }}
+                        />
+                        <span className="font-display text-[1.1rem]">{r.name}</span>
+                      </span>
+                      {r.detail && (
+                        <span className="block font-display text-[0.95rem] italic" style={{ color: look.inkSoft }}>
+                          {r.detail}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {event.timeLabel && (
+              <p
+                className="font-body text-[0.56rem] font-medium tracking-[0.4em] uppercase"
+                style={{ color: accent }}
+              >
+                {event.timeLabel}
+              </p>
+            )}
+            <p className="mt-1 font-display text-[2.1rem] leading-none font-light">{event.time}</p>
+            {event.note && (
+              <p className="mt-2 font-display text-[1.02rem] italic" style={{ color: look.inkSoft }}>
+                {event.note}
+              </p>
+            )}
+
+            <span
+              aria-hidden="true"
+              className="mx-auto mt-5 mb-5 block h-px w-12"
+              style={{ background: accent, opacity: 0.5 }}
+            />
+
+            <p className="font-display text-[1.3rem] leading-tight">{event.venue.name}</p>
+            {event.venue.address && (
+              <p
+                className="mt-1 font-body text-[0.62rem] tracking-[0.22em] uppercase"
+                style={{ color: look.inkSoft }}
+              >
+                {event.venue.address}
+              </p>
+            )}
+
+            {event.attire && (
+              <div className="mt-5">
+                <p
+                  className="font-body text-[0.54rem] font-medium tracking-[0.36em] uppercase"
+                  style={{ color: accent }}
+                >
+                  Attire
+                </p>
+                <p className="mt-1 font-display text-[1.05rem] italic">{event.attire}</p>
+              </div>
+            )}
+
+            <div className="mt-7 flex flex-col items-center gap-2.5">
+              {directions && (
+                <a
+                  href={directions}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border bg-ivory/90 px-6 py-3 font-body text-[0.62rem] font-medium tracking-[0.22em] uppercase shadow-sm transition-all active:scale-[0.98]"
+                  style={{ color: "var(--ink-strong)", borderColor: "color-mix(in oklab, var(--gold) 55%, transparent)" }}
+                >
+                  Get directions <span aria-hidden="true">↗</span>
+                </a>
               )}
+              <AddToCalendar
+                compact
+                event={{
+                  title: `${event.name} · ${COUPLE.bride} & ${COUPLE.groom}`,
+                  description: [
+                    `${event.name} for the wedding of ${COUPLE.bride} & ${COUPLE.groom}.`,
+                    event.timeLabel ? `${event.timeLabel}: ${event.time}.` : "",
+                    event.note ?? "",
+                  ]
+                    .filter(Boolean)
+                    .join(" "),
+                  location: place,
+                  startUtc: event.start.toISOString(),
+                  endUtc: event.end.toISOString(),
+                }}
+              />
             </div>
           </div>
-        )}
-      </Modal>
-    </section>
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -961,7 +979,7 @@ function VenueList() {
               {/* The date stays quiet so the bold event name reads as the label
                   for the venue below, rather than the two competing. */}
               <p className="font-body text-[0.58rem] tracking-[0.18em] uppercase text-muted-foreground">
-                {dates.map((d) => d.replace(" October", " Oct")).join(" & ")}
+                {dates.map((d) => d.replace(" November", " Nov")).join(" & ")}
                 <span aria-hidden="true"> · </span>
                 <span className="font-bold text-foreground/75">{label}</span>
               </p>
@@ -1181,11 +1199,11 @@ function Faqs() {
         onClick={() => setContactOpen(true)}
         className="mt-7 rounded-full bg-bronze px-7 py-3.5 font-body text-[0.64rem] font-medium tracking-[0.22em] uppercase text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.99]"
       >
-        Reach out to {COUPLE.bride} or {COUPLE.groom}
+        Reach out to {CONTACTS.map((c) => c.name).join(" or ")}
       </button>
       </Section>
 
-      <Modal open={contactOpen} onClose={() => setContactOpen(false)} label="Contact the couple">
+      <Modal open={contactOpen} onClose={() => setContactOpen(false)} label="Contact us">
         <div className="flex flex-col items-center gap-5 pt-3 pb-4 text-center">
           <p className="font-display text-2xl text-foreground">We'd love to hear from you</p>
 
@@ -1232,6 +1250,8 @@ function Faqs() {
             ))}
           </div>
 
+          {CONTACT_EMAIL && (
+          <>
           <span
             aria-hidden="true"
             className="block h-px w-12"
@@ -1257,6 +1277,8 @@ function Faqs() {
               Open mail app
             </a>
           </div>
+          </>
+          )}
         </div>
       </Modal>
     </>
@@ -1355,7 +1377,8 @@ function Rsvp() {
   };
 
   return (
-    <Section id="rsvp">
+    // Extra room above, so the RSVP card stands well apart from Questions.
+    <Section id="rsvp" className="mt-16">
       {showPetals && <Petals />}
       <div
         className="rounded-[24px] bg-pearl px-6 py-9 ring-1 ring-[var(--border)]"
@@ -1562,7 +1585,6 @@ export function Microsite({ live }: { live: boolean }) {
       <main className="relative mx-auto w-full max-w-[26rem]">
         <Hero live={live} />
 
-        <Story />
         <JoinUs />
         <EventsSection />
         <DetailCards />

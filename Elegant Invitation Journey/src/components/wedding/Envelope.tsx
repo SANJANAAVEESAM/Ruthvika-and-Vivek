@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { COUPLE } from "./data";
 import { startMusic } from "@/lib/music";
-import backdrop from "@/assets/backdrop.jpg";
+import backdrop from "@/assets/backdrop-ruthvika-vivek.jpg";
 import monogram from "@/assets/monogram.png";
 
 /**
@@ -65,8 +65,8 @@ export function Envelope({ onOpened }: { onOpened: () => void }) {
         src={backdrop}
         alt=""
         aria-hidden="true"
-        width={653}
-        height={1000}
+        width={800}
+        height={1200}
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
 

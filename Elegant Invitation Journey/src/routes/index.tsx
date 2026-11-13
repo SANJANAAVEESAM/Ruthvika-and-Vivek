@@ -4,9 +4,9 @@ import { SITE_URL } from "@/components/wedding/data";
 import { Envelope } from "@/components/wedding/Envelope";
 import { Microsite } from "@/components/wedding/Microsite";
 
-const TITLE = "Lasya & Avyay — October 29–31, 2026 · Charlotte, NC";
+const TITLE = "Ruthvika weds Vivek — 26 November 2026";
 const DESCRIPTION =
-  "Open our invitation: three days of celebrations, venue details, dress codes and RSVP for the wedding of Lasya & Avyay, October 29–31, 2026 near Charlotte, North Carolina.";
+  "With the blessings of our families, we joyfully invite you to the wedding of Ruthvika & Vivek — 26 November 2026, Jogulamba Ammavari Temple, Alampur.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
