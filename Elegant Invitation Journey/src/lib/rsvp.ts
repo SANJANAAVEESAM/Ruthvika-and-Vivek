@@ -40,7 +40,7 @@ const isPayload = (v: unknown): v is RsvpPayload => {
 };
 
 export const submitRsvp = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown): RsvpPayload => {
+  .validator((data: unknown): RsvpPayload => {
     if (!isPayload(data)) throw new Error("Malformed RSVP");
     return {
       // Trimmed and bounded here rather than trusted from the client, since a
