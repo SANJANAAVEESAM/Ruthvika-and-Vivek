@@ -28,12 +28,29 @@ export function Hero({ live }: { live: boolean }) {
             boxShadow: "var(--shadow-paper)",
           }}
         >
+          {/* The same photograph, blurred, filling the band under the menu so the
+              sharp one can start lower without leaving a hard edge. */}
+          <img
+            src={couplePhoto}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full scale-110 object-cover object-top blur-2xl"
+          />
+          {/* Starts below the floating menu, so the groom's face is never under
+              it — and, being shorter, is cropped less at the sides. Its top edge
+              fades into the blur above. */}
           <img
             src={couplePhoto}
             alt={`${COUPLE.bride} and ${COUPLE.groom} holding their rings together`}
             width={800}
             height={1200}
-            className="animate-hero-zoom absolute inset-0 h-full w-full object-cover object-center"
+            className="animate-hero-zoom absolute inset-x-0 bottom-0 w-full object-cover object-top"
+            style={{
+              top: "4rem",
+              height: "calc(100% - 4rem)",
+              WebkitMaskImage: "linear-gradient(180deg, transparent 0, black 2.5rem)",
+              maskImage: "linear-gradient(180deg, transparent 0, black 2.5rem)",
+            }}
           />
 
           {/* Just enough shading under the type to keep white legible on sand */}

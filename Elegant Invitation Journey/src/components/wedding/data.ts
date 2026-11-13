@@ -17,7 +17,8 @@ export const WEDDING_DATE = IST(10, 26, 9, 15);
 
 export const WEDDING_DATE_RANGE = `November 22–26, ${WEDDING_YEAR}`;
 
-export const WHATSAPP_NUMBER = "18326686089";
+/** Sunny — where the RSVP's WhatsApp backup goes if saving ever fails. */
+export const WHATSAPP_NUMBER = "917036884774";
 
 /**
  * Where the invitation lives. Share previews need absolute URLs — a crawler
@@ -130,6 +131,8 @@ export type WeddingEvent = {
   fullName?: string;
   /** The key moments of the ceremony, listed in its details. */
   rituals?: { name: string; detail?: string }[];
+  /** Live-stream link for guests watching from afar. TODO(live): add per event. */
+  liveUrl?: string;
   dressCode?: DressCode;
   /** Shared folder for this celebration's photos. */
   photosUrl?: string;
@@ -363,7 +366,7 @@ export const FULL_WEDDING_CAL = {
   endUtc: IST(10, 26, 13, 0).toISOString(),
 };
 
-export type DetailIcon = "bed" | "plane" | "camera" | "pin";
+export type DetailIcon = "bed" | "plane" | "camera" | "pin" | "live";
 
 // TODO(content): shuttle timings still need to be filled in by the couple —
 // the copy below says so plainly rather than promising details that may not
@@ -378,6 +381,8 @@ export const DETAIL_CARDS: {
   gallery?: boolean;
   /** Appends the nearby hotels under the copy. */
   hotels?: boolean;
+  /** Appends each event's live-stream link under the copy. */
+  live?: boolean;
 }[] = [
   {
     title: "Travel",
@@ -389,5 +394,11 @@ export const DETAIL_CARDS: {
     icon: "pin",
     body: "Where each celebration is held. Tap any address for directions.",
     venues: true,
+  },
+  {
+    title: "Live Links",
+    icon: "live",
+    body: "Can't be with us in person? Watch each celebration live, wherever you are.",
+    live: true,
   },
 ];

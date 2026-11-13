@@ -34,6 +34,7 @@ import { Petals } from "./Petals";
 import { Reveal } from "./Reveal";
 import { EVENT_THEMES, EventScenery } from "./eventThemes";
 import popupPhoto from "@/assets/couple-ruthvika-vivek.jpg";
+import closingPhoto from "@/assets/backdrop-ruthvika-vivek.jpg";
 import { copyText } from "@/lib/clipboard";
 import { submitRsvp } from "@/lib/rsvp";
 
@@ -99,7 +100,116 @@ function BotanicalWatermark() {
  * The turn toward the schedule: the invitation line, the date and the live
  * countdown. Confetti fires once per page load, when the guest reaches this.
  */
-function JoinUs() {
+export type JoinStyle =
+  | "current" | "card" | "tiles" | "ring" | "band" | "flip" | "dials" | "telugu" | "sentence"
+  | "hairline" | "roman" | "editorial" | "engraved";
+
+/** The wedding span as "22 — 26 November 2026", for the small-caps treatments. */
+const SPAN_CAPS = `22 — 26 November ${WEDDING_YEAR}`;
+
+/** The four new treatments of the invitation line, date and countdown. */
+function JoinBody({ variant }: { variant: Exclude<JoinStyle, "current"> }) {
+  // Inside the card the line has the card's padding and frame to clear too.
+  const inset = variant === "card" ? "6rem" : "3rem";
+  const line = (color = "var(--bronze-deep)") => (
+    <p
+      className="font-script leading-snug whitespace-nowrap"
+      style={{ color, fontSize: `min(2.1rem, calc((min(100vw, 26rem) - ${inset}) / 12.5))` }}
+    >
+      Be part of our beautiful beginning
+    </p>
+  );
+  const caps = (color = "var(--ink-strong)") => (
+    <p className="font-body text-[0.62rem] font-medium tracking-[0.34em] uppercase" style={{ color, opacity: 0.85 }}>
+      {SPAN_CAPS}
+    </p>
+  );
+
+  // Everything in one ivory card with a fine double gold border.
+  if (variant === "card") {
+    return (
+      <div
+        className="rounded-[22px] px-5 pt-10 pb-10"
+        style={{
+          background: "color-mix(in oklab, var(--pearl) 88%, transparent)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          border: "1px solid color-mix(in oklab, var(--gold) 70%, transparent)",
+          boxShadow:
+            "inset 0 0 0 6px color-mix(in oklab, var(--pearl) 90%, transparent), inset 0 0 0 7px color-mix(in oklab, var(--gold) 40%, transparent), var(--shadow-soft)",
+        }}
+      >
+        {line()}
+        <div className="mt-3">{caps()}</div>
+        <Ornament className="my-7" />
+        <Countdown />
+      </div>
+    );
+  }
+
+  // Script line, small-caps date, the countdown in soft rose tiles.
+  if (variant === "tiles") {
+    return (
+      <>
+        {line()}
+        <div className="mt-3">{caps()}</div>
+        <div className="mt-9">
+          <Countdown variant="tiles" />
+        </div>
+      </>
+    );
+  }
+
+  // The days inside a gold ring, the rest of the time on one line beneath.
+  if (variant === "ring") {
+    return (
+      <>
+        {line()}
+        <div className="mt-3">{caps()}</div>
+        <div className="mt-9">
+          <Countdown variant="ring" />
+        </div>
+      </>
+    );
+  }
+
+  // The newer countdown looks, under the same script line and date.
+  if (
+    variant === "flip" || variant === "dials" || variant === "telugu" || variant === "sentence" ||
+    variant === "hairline" || variant === "roman" || variant === "editorial" || variant === "engraved"
+  ) {
+    return (
+      <>
+        {line()}
+        <div className="mt-3">{caps()}</div>
+        <div className={variant === "editorial" ? "mt-4" : "mt-9"}>
+          <Countdown variant={variant} />
+        </div>
+      </>
+    );
+  }
+
+  // A full-width rose band, ivory type, gold edges like a ribbon.
+  return (
+    <div
+      className="relative -mx-6 px-6 py-11"
+      style={{
+        background: "linear-gradient(90deg, oklch(0.5 0.08 10), oklch(0.56 0.08 12) 50%, oklch(0.5 0.08 10))",
+        boxShadow: "0 16px 32px -20px oklch(0.35 0.08 10 / 0.6)",
+      }}
+    >
+      <span aria-hidden="true" className="absolute inset-x-0 top-1.5 h-px" style={{ background: "oklch(0.86 0.06 70 / 0.7)" }} />
+      <span aria-hidden="true" className="absolute inset-x-0 bottom-1.5 h-px" style={{ background: "oklch(0.86 0.06 70 / 0.7)" }} />
+      {line("oklch(0.98 0.01 40)")}
+      <div className="mt-3">{caps("oklch(0.95 0.02 40)")}</div>
+      <div className="mt-8">
+        <Countdown variant="light" />
+      </div>
+    </div>
+  );
+}
+
+function JoinUs({ variant = "current" }: { variant?: JoinStyle }) {
   const ref = useRef<HTMLElement>(null);
   const [celebrate, setCelebrate] = useState(false);
 
@@ -123,12 +233,16 @@ function JoinUs() {
   return (
     <section
       ref={ref}
+      id="join"
       className="relative w-full overflow-hidden px-6 py-20 text-center"
     >
       {celebrate && <Confetti />}
 
       <Reveal>
-        {/* One gap value, so the spacing between every element is identical */}
+        {variant !== "current" ? (
+          <JoinBody variant={variant} />
+        ) : (
+        /* One gap value, so the spacing between every element is identical */
         <div className="flex flex-col items-center gap-9">
           <p
             className="font-accent-soft leading-snug text-foreground"
@@ -153,6 +267,7 @@ function JoinUs() {
           </p>
           <Countdown />
         </div>
+        )}
       </Reveal>
     </section>
   );
@@ -209,16 +324,16 @@ export function EventsSection({
       <Reveal>
         {heading ?? (
           <div className="relative py-6 text-center">
-            {/* "Our Pelli Gola", in Telugu. */}
+            {/* "Maa Pelli Sandadi" (our wedding festivities), in Telugu. */}
             <h2
               lang="te"
-              aria-label="Maa Pelli Gola: our wedding celebrations"
+              aria-label="Maa Pelli Sandadi: our wedding celebrations"
               className="relative leading-none text-bronze"
               // Explicit 400: the global h2 rule asks for 600, which Suravaram
               // doesn't have, so the browser would fake a bold.
               style={{ fontFamily: '"Suravaram", serif', fontSize: "clamp(2.4rem, 11vw, 2.9rem)", fontWeight: 400 }}
             >
-              మా పెళ్లి గోల
+              మా పెళ్లి సందడి
             </h2>
             {/* One line of fine capitals, sized so it always fits the screen. */}
             <p
@@ -288,10 +403,15 @@ export function EventsSection({
                           setOpen({ event, day: activeDay });
                         }}
                         onKeyDown={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-body text-[0.54rem] font-medium tracking-[0.26em] uppercase text-bronze-deep transition-colors active:scale-[0.97]"
+                        // Highlighted but soft: a blush fill, a rose-gold edge and a
+                        // faint glow — it reads as the thing to tap without shouting.
+                        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-body text-[0.56rem] font-semibold tracking-[0.24em] uppercase text-bronze-deep transition-all active:scale-[0.97]"
                         style={{
-                          background: "transparent",
-                          border: "1px solid color-mix(in oklab, var(--gold) 70%, transparent)",
+                          background:
+                            "linear-gradient(180deg, color-mix(in oklab, var(--bronze) 10%, var(--pearl)), color-mix(in oklab, var(--bronze) 18%, var(--pearl)))",
+                          border: "1px solid color-mix(in oklab, var(--bronze) 45%, var(--gold))",
+                          boxShadow:
+                            "0 6px 16px -10px color-mix(in oklab, var(--bronze) 70%, transparent), inset 0 1px 0 oklch(1 0 0 / 0.6)",
                         }}
                       >
                         View details <span aria-hidden="true">→</span>
@@ -840,7 +960,63 @@ const DETAIL_ICONS: Record<DetailIcon, ReactNode> = {
       <circle cx="24" cy="14" r="4.1" />
     </g>
   ),
+  // A screen with a play mark, broadcast waves either side.
+  live: (
+    <g {...iconStroke}>
+      <rect x="13" y="8" width="22" height="16" rx="2.5" />
+      <path d="M22 12.5v7l5.5-3.5z" />
+      <path d="M19 29h10" />
+      <path d="M8.5 11a10 10 0 0 0 0 10M39.5 11a10 10 0 0 1 0 10" />
+      <path d="M5 8a15 15 0 0 0 0 16M43 8a15 15 0 0 1 0 16" />
+    </g>
+  ),
 };
+
+/** Each celebration with its live stream, or a note that the link is coming. */
+function LiveList() {
+  const rows = EVENT_DAYS.flatMap((day) => day.events.map((event) => ({ event, day })));
+  return (
+    <div className="mx-auto mt-8 max-w-[20rem] text-left">
+      <p className="mb-1 font-body text-[0.58rem] font-medium tracking-[0.26em] uppercase text-muted-foreground">
+        Live streams
+      </p>
+      {rows.map(({ event, day }, i) => (
+        <div
+          key={event.slug}
+          className="flex items-center justify-between gap-3 py-3.5"
+          style={{
+            borderTop: i === 0 ? "none" : "1px solid color-mix(in oklab, var(--gold) 28%, transparent)",
+          }}
+        >
+          <div className="min-w-0">
+            <p className="font-body text-[0.56rem] tracking-[0.18em] uppercase text-muted-foreground">
+              {day.date.replace(" November", " Nov")} · {event.time}
+            </p>
+            <p className="mt-0.5 font-display text-[1.15rem] leading-tight font-semibold text-ink-strong">
+              {event.name}
+            </p>
+          </div>
+          {event.liveUrl ? (
+            <a
+              href={event.liveUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Watch the ${event.name} live`}
+              className="shrink-0 rounded-full px-3.5 py-2 font-body text-[0.6rem] font-medium tracking-[0.14em] uppercase transition-opacity hover:opacity-90"
+              style={{ background: "var(--bronze)", color: "var(--primary-foreground)" }}
+            >
+              Watch live
+            </a>
+          ) : (
+            <span className="shrink-0 font-display text-[0.92rem] text-muted-foreground italic">
+              Link coming soon
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function DetailIconArt({ icon, className = "h-10 w-auto" }: { icon: DetailIcon; className?: string }) {
   return (
@@ -871,7 +1047,10 @@ function DetailCards() {
             key={card.title}
             type="button"
             onClick={() => setOpenIdx(i)}
-            className="relative flex flex-col items-center justify-center gap-3 rounded-2xl px-4 py-7 text-center transition-transform active:scale-[0.99]"
+            // An odd last tile spans the row rather than sitting alone in half of it.
+            className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl px-4 py-7 text-center transition-transform active:scale-[0.99] ${
+              i === DETAIL_CARDS.length - 1 && DETAIL_CARDS.length % 2 === 1 ? "col-span-2" : ""
+            }`}
             style={{
               background: "color-mix(in oklab, var(--ivory) 68%, transparent)",
               backdropFilter: "blur(3px)",
@@ -923,6 +1102,7 @@ function DetailCards() {
               {active.venues && <VenueList />}
               {active.gallery && <GalleryList />}
               {active.hotels && <HotelList />}
+              {active.live && <LiveList />}
             </div>
           </div>
         )}
@@ -1575,7 +1755,424 @@ function Rsvp() {
 
 /* --------------------------------- microsite --------------------------------- */
 
-export function Microsite({ live }: { live: boolean }) {
+/* --------------------------------- closing --------------------------------- */
+
+export type ClosingStyle =
+  | "card" | "open" | "arch" | "seal" | "rose"
+  | "letter" | "telugu" | "photo" | "ribbon"
+  | "polaroid" | "envelope" | "medallion" | "sunset";
+
+/** The line, the couple and the blessing, in one ink — shared by the newer closings. */
+function ClosingWords({
+  ink = "var(--ink-strong)",
+  soft = "var(--muted-foreground)",
+  script = "var(--bronze-deep)",
+  inset = "4rem",
+}: {
+  ink?: string;
+  soft?: string;
+  script?: string;
+  inset?: string;
+}) {
+  return (
+    <>
+      <p
+        className="font-script leading-snug whitespace-nowrap"
+        style={{ color: script, fontSize: `min(1.8rem, calc((min(100vw, 26rem) - ${inset}) / 13.5))` }}
+      >
+        We can't wait to celebrate with you
+      </p>
+      <p className="mt-3 font-body text-[0.58rem] font-medium tracking-[0.34em] uppercase" style={{ color: ink, opacity: 0.85 }}>
+        {COUPLE.bride} &amp; {COUPLE.groom} · 26.11.{WEDDING_YEAR}
+      </p>
+      <p className="mt-7 font-body text-[0.52rem] font-medium tracking-[0.36em] uppercase" style={{ color: soft }}>
+        With love &amp; best wishes from
+      </p>
+      <p className="mt-1.5 font-display text-[1.35rem] leading-tight" style={{ color: ink }}>
+        Bommoju Malathi &amp; Sadashivudu
+      </p>
+    </>
+  );
+}
+
+/** Polaroid, envelope, medallion and sunset closings. */
+function ClosingMore({ variant }: { variant: "polaroid" | "envelope" | "medallion" | "sunset" }) {
+  // A tilted instant photo with a handwritten caption, the blessing beneath.
+  if (variant === "polaroid") {
+    return (
+      <section className="px-5 pt-12 pb-14 text-center">
+        <Reveal>
+          <div
+            className="mx-auto w-[78%] max-w-[17rem] bg-white p-3 pb-4"
+            style={{ transform: "rotate(-3deg)", boxShadow: "0 18px 36px -18px oklch(0.25 0.03 20 / 0.55), 0 2px 6px oklch(0.25 0.03 20 / 0.15)" }}
+          >
+            <img src={popupPhoto} alt={`${COUPLE.bride} and ${COUPLE.groom}`} className="block aspect-square w-full object-cover" style={{ objectPosition: "center 35%" }} />
+            <p className="mt-3 font-script text-[1.35rem] leading-tight text-ink-strong">
+              {COUPLE.bride} &amp; {COUPLE.groom}
+            </p>
+            <p className="font-display text-[0.85rem] text-muted-foreground italic">26 · 11 · {WEDDING_YEAR}</p>
+          </div>
+          <p
+            className="mt-10 font-script leading-snug whitespace-nowrap text-bronze-deep"
+            style={{ fontSize: "min(1.9rem, calc((min(100vw, 26rem) - 2.5rem) / 13.5))" }}
+          >
+            We can't wait to celebrate with you
+          </p>
+          <DiamondRule className="my-6" />
+          <p className="font-body text-[0.52rem] font-medium tracking-[0.36em] uppercase text-muted-foreground">With love &amp; best wishes from</p>
+          <p className="mt-1.5 font-display text-[1.35rem] text-ink-strong">Bommoju Malathi &amp; Sadashivudu</p>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // An envelope: the card rises out of it, a rose wax seal on the flap.
+  if (variant === "envelope") {
+    return (
+      <section className="px-5 pt-12 pb-14 text-center">
+        <Reveal>
+          <div className="relative mx-auto max-w-[22rem]">
+            {/* The card, standing up out of the envelope. */}
+            <div
+              className="relative z-0 mx-4 rounded-t-[10px] px-5 pt-8 pb-28"
+              style={{ background: "var(--pearl)", boxShadow: "0 -4px 18px -10px oklch(0.3 0.03 20 / 0.35)", border: "1px solid color-mix(in oklab, var(--gold) 45%, transparent)" }}
+            >
+              <ClosingWords inset="6.5rem" />
+            </div>
+            {/* The envelope's front pocket, overlapping the foot of the card. */}
+            <div
+              className="relative z-10 -mt-24 h-32 overflow-hidden rounded-b-[14px]"
+              style={{ background: "linear-gradient(180deg, oklch(0.9 0.03 20), oklch(0.86 0.04 18))", boxShadow: "0 18px 32px -20px oklch(0.3 0.05 15 / 0.6)" }}
+            >
+              <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-hidden="true">
+                <path d="M0 0 L50 26 L100 0 L100 40 L0 40 Z" fill="oklch(0.88 0.035 19)" />
+                <path d="M0 0 L50 26 L100 0" fill="none" stroke="oklch(0.78 0.05 18)" strokeWidth="0.4" />
+              </svg>
+              <div
+                className="absolute top-[38%] left-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-full"
+                style={{ background: "radial-gradient(circle at 35% 30%, oklch(0.6 0.1 15), oklch(0.45 0.11 12) 60%, oklch(0.36 0.1 10))", boxShadow: "0 4px 10px -3px oklch(0.3 0.08 10 / 0.6)" }}
+              >
+                <span className="font-display text-[1.15rem] leading-none text-[oklch(0.9_0.04_40)] italic">R&amp;V</span>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // A round portrait in a gold ring, the words gathered beneath it.
+  if (variant === "medallion") {
+    return (
+      <section className="px-5 pt-12 pb-14 text-center">
+        <Reveal>
+          <div
+            className="mx-auto size-44 overflow-hidden rounded-full"
+            style={{
+              boxShadow:
+                "0 0 0 4px var(--pearl), 0 0 0 5px color-mix(in oklab, var(--gold) 80%, transparent), 0 0 0 11px color-mix(in oklab, var(--pearl) 70%, transparent), 0 0 0 12px color-mix(in oklab, var(--gold) 45%, transparent), 0 20px 36px -18px oklch(0.3 0.04 20 / 0.5)",
+            }}
+          >
+            <img src={closingPhoto} alt={`${COUPLE.bride} and ${COUPLE.groom}`} className="h-full w-full object-cover" style={{ objectPosition: "50% 22%", transform: "scale(1.9)", transformOrigin: "50% 26%" }} />
+          </div>
+          <div className="mt-10">
+            <ClosingWords inset="2.5rem" />
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // Sunset: a full-width band from rose into champagne gold, edge to edge.
+  return (
+    <section className="pt-10 pb-14 text-center">
+      <Reveal>
+        <div
+          className="px-5 py-14"
+          style={{
+            background:
+              "linear-gradient(180deg, transparent 0%, color-mix(in oklab, oklch(0.9 0.04 20) 85%, transparent) 14%, oklch(0.84 0.06 25) 50%, oklch(0.86 0.06 60) 86%, transparent 100%)",
+          }}
+        >
+          <DiamondRule color="oklch(0.62 0.08 30)" className="mb-7" />
+          <ClosingWords inset="2.5rem" ink="oklch(0.22 0.04 15)" soft="oklch(0.38 0.05 20)" script="oklch(0.36 0.1 12)" />
+          <DiamondRule color="oklch(0.62 0.08 30)" className="mt-8" />
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+const TE = { fontFamily: '"Suravaram", serif', fontWeight: 400 } as const;
+
+/** The closing variants that are laid out differently from the framed cards. */
+function ClosingAlt({ variant }: { variant: "letter" | "telugu" | "photo" | "ribbon" }) {
+  // A personal note: set left, signed off in script, like a card written by hand.
+  if (variant === "letter") {
+    return (
+      <section className="px-5 pt-10 pb-14">
+        <Reveal>
+          <div
+            className="relative rounded-[6px] px-7 pt-9 pb-10"
+            style={{
+              background: "color-mix(in oklab, var(--pearl) 92%, transparent)",
+              boxShadow: "0 1px 2px oklch(0.3 0.03 20 / 0.12), 0 22px 40px -26px oklch(0.3 0.04 20 / 0.45)",
+              // Faint ruled lines, like letter paper.
+              backgroundImage:
+                "repeating-linear-gradient(180deg, transparent 0, transparent 2.1rem, color-mix(in oklab, var(--gold) 22%, transparent) 2.1rem, color-mix(in oklab, var(--gold) 22%, transparent) calc(2.1rem + 1px))",
+            }}
+          >
+            <span aria-hidden="true" className="absolute top-0 bottom-0 left-5 w-px" style={{ background: "color-mix(in oklab, var(--bronze) 30%, transparent)" }} />
+            <p className="font-display text-[1.2rem] leading-[2.1rem] text-ink-strong italic">Dear friends &amp; family,</p>
+            <p className="font-display text-[1.1rem] leading-[2.1rem] text-foreground/85">
+              Thank you for being part of our story. We can't wait to celebrate with you this November.
+            </p>
+            <p className="mt-[2.1rem] font-display text-[1rem] leading-[2.1rem] text-muted-foreground italic">
+              With love &amp; best wishes,
+            </p>
+            <p className="font-script text-[1.9rem] leading-[2.6rem] text-bronze-deep">Malathi &amp; Sadashivudu</p>
+            <p className="font-body text-[0.56rem] tracking-[0.3em] text-muted-foreground uppercase">Bommoju family</p>
+            <p className="mt-6 text-right font-body text-[0.56rem] tracking-[0.3em] uppercase text-ink-strong/70">
+              {COUPLE.bride} &amp; {COUPLE.groom} · 26.11.{WEDDING_YEAR}
+            </p>
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // Bilingual: the warm line in Telugu first, English beneath, names in both.
+  if (variant === "telugu") {
+    return (
+      <section className="px-5 pt-10 pb-14 text-center">
+        <Reveal>
+          <p lang="te" className="text-[1.9rem] leading-snug text-bronze-deep" style={TE}>
+            మీ రాక కోసం ఎదురుచూస్తున్నాం
+          </p>
+          <p className="mt-2 font-display text-[1.05rem] text-muted-foreground italic">
+            We can't wait to celebrate with you
+          </p>
+          <DiamondRule className="my-8" />
+          <p lang="te" className="text-[1rem] text-muted-foreground" style={TE}>
+            శుభాకాంక్షలతో
+          </p>
+          <p lang="te" className="mt-1 text-[1.7rem] leading-snug text-ink-strong" style={TE}>
+            బొమ్మోజు మాలతి &amp; సదాశివుడు
+          </p>
+          <p className="mt-2 font-body text-[0.56rem] font-medium tracking-[0.32em] uppercase text-muted-foreground">
+            With best wishes · Bommoju Malathi &amp; Sadashivudu
+          </p>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // The couple's stage photograph, the words laid over its foot.
+  if (variant === "photo") {
+    return (
+      <section className="px-5 pt-10 pb-14 text-center">
+        <Reveal>
+          <div className="relative overflow-hidden rounded-[24px]" style={{ boxShadow: "var(--shadow-paper)" }}>
+            <img
+              src={closingPhoto}
+              alt={`${COUPLE.bride} and ${COUPLE.groom}`}
+              className="block aspect-[4/5] w-full object-cover"
+              style={{ objectPosition: "center 25%" }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(180deg, transparent 30%, oklch(0.2 0.03 15 / 0.55) 62%, oklch(0.16 0.03 15 / 0.85) 100%)" }}
+            />
+            <div className="absolute inset-x-0 bottom-0 px-5 pb-8 text-white">
+              <p
+                className="font-script leading-snug whitespace-nowrap"
+                style={{ fontSize: "min(1.8rem, calc((min(100vw, 26rem) - 4.5rem) / 13.5))" }}
+              >
+                We can't wait to celebrate with you
+              </p>
+              <p className="mt-3 font-body text-[0.58rem] font-medium tracking-[0.34em] uppercase opacity-85">
+                {COUPLE.bride} &amp; {COUPLE.groom} · 26.11.{WEDDING_YEAR}
+              </p>
+              <span aria-hidden="true" className="mx-auto my-5 block h-px w-12 bg-white/50" />
+              <p className="font-body text-[0.52rem] tracking-[0.34em] uppercase opacity-75">With love &amp; best wishes from</p>
+              <p className="mt-1.5 font-display text-[1.3rem]">Bommoju Malathi &amp; Sadashivudu</p>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
+
+  // Ribbon: the line on its own, then a full-width rose band carrying the blessing.
+  return (
+    <section className="pt-12 pb-14 text-center">
+      <Reveal>
+        <p
+          className="px-5 font-script leading-snug whitespace-nowrap text-bronze-deep"
+          style={{ fontSize: "min(2rem, calc((min(100vw, 26rem) - 2.5rem) / 13.5))" }}
+        >
+          We can't wait to celebrate with you
+        </p>
+        <p className="mt-3 font-body text-[0.58rem] font-medium tracking-[0.34em] uppercase text-ink-strong/80">
+          {COUPLE.bride} &amp; {COUPLE.groom}
+        </p>
+        <div
+          className="relative mt-10 py-7"
+          style={{
+            background: "linear-gradient(90deg, oklch(0.5 0.08 10), oklch(0.56 0.08 12) 50%, oklch(0.5 0.08 10))",
+            boxShadow: "0 14px 30px -18px oklch(0.35 0.08 10 / 0.6)",
+          }}
+        >
+          {/* Fine gold edges, top and bottom, like a satin ribbon. */}
+          <span aria-hidden="true" className="absolute inset-x-0 top-1.5 h-px" style={{ background: "oklch(0.86 0.06 70 / 0.7)" }} />
+          <span aria-hidden="true" className="absolute inset-x-0 bottom-1.5 h-px" style={{ background: "oklch(0.86 0.06 70 / 0.7)" }} />
+          <p className="font-body text-[0.52rem] font-medium tracking-[0.36em] uppercase" style={{ color: "oklch(0.92 0.03 40)" }}>
+            With love &amp; best wishes from
+          </p>
+          <p className="mt-2 font-display text-[1.4rem]" style={{ color: "oklch(0.98 0.01 40)" }}>
+            Bommoju Malathi &amp; Sadashivudu
+          </p>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/** The fine gold rule with a diamond, used between the two halves. */
+function DiamondRule({ color = "var(--gold)", className = "" }: { color?: string; className?: string }) {
+  return (
+    <div aria-hidden="true" className={`flex items-center justify-center gap-3 ${className}`}>
+      <span className="h-px w-10" style={{ background: `linear-gradient(90deg, transparent, ${color})` }} />
+      <span className="size-1.5 rotate-45" style={{ background: color }} />
+      <span className="h-px w-10" style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
+    </div>
+  );
+}
+
+/**
+ * The sign-off at the foot of the page: the couple's line, then the family's
+ * blessing. Several treatments, chosen by `variant`.
+ */
+function Closing({ variant = "card" }: { variant?: ClosingStyle }) {
+  if (variant === "letter" || variant === "telugu" || variant === "photo" || variant === "ribbon") {
+    return <ClosingAlt variant={variant} />;
+  }
+  if (variant === "polaroid" || variant === "envelope" || variant === "medallion" || variant === "sunset") {
+    return <ClosingMore variant={variant} />;
+  }
+  const rose = variant === "rose";
+  const ink = rose ? "oklch(0.97 0.012 30)" : "var(--ink-strong)";
+  const soft = rose ? "oklch(0.88 0.03 30)" : "var(--muted-foreground)";
+  const accent = rose ? "oklch(0.86 0.06 70)" : "var(--gold)";
+  const script = rose ? "oklch(0.97 0.012 30)" : "var(--bronze-deep)";
+
+  // How far the one-line script must shrink to sit inside the frame.
+  const inset = variant === "open" ? "3rem" : variant === "arch" ? "6rem" : "5rem";
+
+  const body = (
+    <>
+      {variant === "seal" ? (
+        <div
+          aria-hidden="true"
+          className="mx-auto mb-7 flex size-20 items-center justify-center rounded-full"
+          style={{
+            background: "radial-gradient(circle at 35% 30%, oklch(0.9 0.05 60), oklch(0.78 0.06 55) 55%, oklch(0.62 0.07 40))",
+            boxShadow: "0 6px 16px -6px oklch(0.4 0.06 30 / 0.5), inset 0 0 0 3px oklch(1 0 0 / 0.25)",
+          }}
+        >
+          <span className="font-display text-[1.6rem] leading-none text-[oklch(0.35_0.06_20)] italic">
+            R<span className="text-[1rem]">&amp;</span>V
+          </span>
+        </div>
+      ) : null}
+
+      {/* The family's blessing first, then the couple's line closes the page. */}
+      <p className="font-body text-[0.54rem] font-medium tracking-[0.36em] uppercase" style={{ color: soft }}>
+        With love &amp; best wishes from
+      </p>
+      <p className="mt-3 font-display text-[1.45rem] leading-tight" style={{ color: ink }}>
+        Bommoju Malathi
+        <span className="mx-1.5 font-script text-[1.3rem]" style={{ color: rose ? accent : "var(--bronze)" }}>
+          &amp;
+        </span>
+        Sadashivudu
+      </p>
+
+      <p
+        className="mt-7 font-script leading-snug whitespace-nowrap"
+        style={{
+          color: script,
+          fontSize: `min(${variant === "open" ? "2rem" : "1.75rem"}, calc((min(100vw, 26rem) - ${inset}) / 13.5))`,
+        }}
+      >
+        We can't wait to celebrate with you
+      </p>
+    </>
+  );
+
+  // Open: no frame at all, just the words on a soft ivory glow.
+  if (variant === "open") {
+    return (
+      <section className="px-5 pt-10 pb-14 text-center">
+        <Reveal>
+          <div
+            className="py-10"
+            style={{
+              background:
+                "radial-gradient(70% 60% at 50% 50%, color-mix(in oklab, var(--pearl) 85%, transparent) 0%, color-mix(in oklab, var(--pearl) 45%, transparent) 60%, transparent 100%)",
+            }}
+          >
+            {body}
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
+
+  const frame: React.CSSProperties =
+    variant === "rose"
+      ? {
+          background: "linear-gradient(170deg, oklch(0.5 0.08 10), oklch(0.4 0.08 8))",
+          border: `1px solid color-mix(in oklab, ${accent} 70%, transparent)`,
+          boxShadow: `inset 0 0 0 6px oklch(0.45 0.08 9), inset 0 0 0 7px color-mix(in oklab, ${accent} 45%, transparent), var(--shadow-soft)`,
+        }
+      : {
+          background: "color-mix(in oklab, var(--pearl) 88%, transparent)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          border: "1px solid color-mix(in oklab, var(--gold) 70%, transparent)",
+          boxShadow:
+            "inset 0 0 0 6px color-mix(in oklab, var(--pearl) 90%, transparent), inset 0 0 0 7px color-mix(in oklab, var(--gold) 40%, transparent), var(--shadow-soft)",
+        };
+
+  return (
+    <section className="px-5 pt-10 pb-14 text-center">
+      <Reveal>
+        <div
+          className={`relative px-5 ${variant === "arch" ? "mx-auto max-w-[21rem] pt-20 pb-12" : "pt-10 pb-11"}`}
+          style={{
+            ...frame,
+            borderRadius: variant === "arch" ? "999px 999px 22px 22px" : "22px",
+          }}
+        >
+          {body}
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+export function Microsite({
+  live,
+  // No frame: the words on a soft ivory glow.
+  closingStyle = "open",
+  // The days huge and light, the rest a quiet italic line beneath.
+  joinStyle = "editorial",
+}: {
+  live: boolean;
+  closingStyle?: ClosingStyle;
+  joinStyle?: JoinStyle;
+}) {
   return (
     <div className="relative">
       <BotanicalWatermark />
@@ -1585,23 +2182,14 @@ export function Microsite({ live }: { live: boolean }) {
       <main className="relative mx-auto w-full max-w-[26rem]">
         <Hero live={live} />
 
-        <JoinUs />
+        <JoinUs variant={joinStyle} />
         <EventsSection />
         <DetailCards />
         <Faqs />
         <Rsvp />
 
         {/* Closing */}
-        <section className="px-5 pt-6 pb-16 text-center">
-          <Reveal>
-            <p className="mx-auto max-w-[16rem] font-script text-3xl leading-snug text-foreground/90">
-              We can't wait to celebrate with you
-            </p>
-            <p className="mt-8 font-body text-[0.6rem] tracking-[0.3em] uppercase text-muted-foreground">
-              {COUPLE.bride} & {COUPLE.groom}
-            </p>
-          </Reveal>
-        </section>
+        <Closing variant={closingStyle} />
 
         {/* Designer credit, last thing on the page. Kept out of the closing
             block so it reads as a signature under the whole invitation rather
@@ -1618,7 +2206,7 @@ export function Microsite({ live }: { live: boolean }) {
           />
           {/* Only the name is the link, not the whole line — "Designed by" is
               not what a guest would tap. */}
-          <p className="shrink-0 font-body text-[0.55rem] tracking-[0.24em] uppercase text-muted-foreground/60">
+          <p className="shrink-0 font-body text-[0.55rem] font-semibold tracking-[0.24em] uppercase text-muted-foreground/85">
             Designed by{" "}
             <a
               href={DESIGNER_URL}

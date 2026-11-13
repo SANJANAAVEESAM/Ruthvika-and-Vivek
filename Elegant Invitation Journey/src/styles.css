@@ -62,34 +62,36 @@
 
 :root {
   --radius: 0.25rem;
-  --background: oklch(0.965 0.012 80);
-  --foreground: oklch(0.28 0.02 60);
-  --card: oklch(0.982 0.008 84);
-  --card-foreground: oklch(0.28 0.02 60);
-  --popover: oklch(0.982 0.008 84);
-  --popover-foreground: oklch(0.28 0.02 60);
-  --primary: oklch(0.55 0.09 65);
+  /* Rose & champagne. "--bronze" keeps its name but now holds the dusty
+     rose; the earlier bronze palette was --bronze oklch(0.55 0.09 65). */
+  --background: oklch(0.97 0.012 30);
+  --foreground: oklch(0.3 0.03 10);
+  --card: oklch(0.984 0.008 30);
+  --card-foreground: oklch(0.3 0.03 10);
+  --popover: oklch(0.984 0.008 30);
+  --popover-foreground: oklch(0.3 0.03 10);
+  --primary: oklch(0.56 0.08 10);
   --primary-foreground: oklch(0.975 0.01 84);
-  --secondary: oklch(0.93 0.018 80);
-  --secondary-foreground: oklch(0.32 0.025 60);
-  --muted: oklch(0.94 0.014 80);
-  --muted-foreground: oklch(0.5 0.03 65);
-  --accent: oklch(0.55 0.09 65);
+  --secondary: oklch(0.935 0.02 20);
+  --secondary-foreground: oklch(0.32 0.025 10);
+  --muted: oklch(0.945 0.016 25);
+  --muted-foreground: oklch(0.52 0.04 15);
+  --accent: oklch(0.56 0.08 10);
   --accent-foreground: oklch(0.975 0.01 84);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.885 0.016 80);
-  --input: oklch(0.885 0.016 80);
-  --ring: oklch(0.55 0.09 65);
+  --border: oklch(0.89 0.02 20);
+  --input: oklch(0.89 0.02 20);
+  --ring: oklch(0.56 0.08 10);
 
-  --gold: oklch(0.72 0.075 85);
-  --bronze: oklch(0.55 0.09 65);
+  --gold: oklch(0.78 0.06 60);
+  --bronze: oklch(0.56 0.08 10);
   /* For type sitting over an event card's artwork wash, where the
      ordinary foreground and bronze lose contrast against the image. */
-  --ink-strong: oklch(0.15 0.015 60);
-  --bronze-deep: oklch(0.4 0.1 62);
-  --ivory: oklch(0.965 0.012 80);
-  --pearl: oklch(0.985 0.006 84);
+  --ink-strong: oklch(0.18 0.025 10);
+  --bronze-deep: oklch(0.43 0.09 10);
+  --ivory: oklch(0.97 0.012 30);
+  --pearl: oklch(0.987 0.006 30);
   --silver: oklch(0.8 0.01 260);
   --silver-deep: oklch(0.66 0.012 260);
 

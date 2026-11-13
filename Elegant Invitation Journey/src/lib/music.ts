@@ -19,6 +19,121 @@ export const MUSIC_SRC = "/music/invitation.m4a";
 const TARGET_VOLUME = 0.3;
 const FADE_MS = 3500;
 
+/**
+ * The song, played through YouTube's own embedded player. Set YT_ID to "" to
+ * fall back to the local file above.
+ */
+const YT_ID = "dPEPw-H12Ek";
+/** Where in the song to begin, and begin again on each loop: 0:38. */
+const YT_START = 38;
+
+type YTPlayer = {
+  playVideo(): void;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  setVolume(volume: number): void;
+  mute(): void;
+  unMute(): void;
+};
+let yt: YTPlayer | null = null;
+let ytReady = false;
+let ytWanted = false; // the guest has tapped
+let ytPlaying = false;
+let ytFaded = false;
+let ytApi: Promise<void> | null = null;
+
+function loadYouTubeApi(): Promise<void> {
+  if (ytApi) return ytApi;
+  ytApi = new Promise((resolve) => {
+    const w = window as unknown as { YT?: { Player?: unknown }; onYouTubeIframeAPIReady?: () => void };
+    if (w.YT?.Player) {
+      resolve();
+      return;
+    }
+    const prev = w.onYouTubeIframeAPIReady;
+    w.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve();
+    };
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    s.async = true;
+    document.head.appendChild(s);
+  });
+  return ytApi;
+}
+
+/**
+ * Loads the player ahead of the tap. Browsers only let audio start from a user
+ * gesture, and a player that is still downloading when the guest taps would
+ * miss it — so it is built early, paused, and merely told to play on the tap.
+ */
+export function preloadMusic() {
+  if (!YT_ID || typeof window === "undefined" || yt) return;
+  void loadYouTubeApi().then(() => {
+    if (yt) return;
+    const host = document.createElement("div");
+    // Off to the side at the size YouTube asks for, not display:none.
+    host.style.cssText = "position:fixed;left:-320px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;";
+    const mount = document.createElement("div");
+    host.appendChild(mount);
+    document.body.appendChild(host);
+
+    const YT = (window as unknown as { YT: { Player: new (el: HTMLElement, opts: unknown) => YTPlayer } }).YT;
+    yt = new YT.Player(mount, {
+      host: "https://www.youtube-nocookie.com",
+      width: 200,
+      height: 200,
+      videoId: YT_ID,
+      // No loop/playlist here: YouTube's own loop restarts at 0:00 and ignores
+      // `start`, so the loop is done below when the song ends.
+      playerVars: { autoplay: 0, controls: 0, start: YT_START, playsinline: 1, rel: 0, modestbranding: 1 },
+      events: {
+        onReady: () => {
+          ytReady = true;
+          if (ytWanted) playYouTube();
+        },
+        onStateChange: (e: { data: number }) => {
+          // Ended: go round again from 1:37, not from the top.
+          if (e.data === 0) {
+            yt?.seekTo(YT_START, true);
+            yt?.playVideo();
+          }
+          const playing = e.data === 1;
+          if (playing !== ytPlaying) {
+            ytPlaying = playing;
+            emit();
+          }
+          if (playing && !ytFaded) fadeYouTube();
+        },
+      },
+    });
+  });
+}
+
+function playYouTube() {
+  if (!yt) return;
+  yt.setVolume(0);
+  if (muted) yt.mute();
+  yt.playVideo();
+}
+
+/** The same slow fade-in as the local track, in YouTube's 0–100 volume. */
+function fadeYouTube() {
+  ytFaded = true;
+  const started = performance.now();
+  const id = window.setInterval(() => {
+    const t = Math.min(1, (performance.now() - started) / FADE_MS);
+    yt?.setVolume(Math.round(TARGET_VOLUME * 100 * t));
+    if (t >= 1) window.clearInterval(id);
+  }, 100);
+}
+
+function startYouTube() {
+  ytWanted = true;
+  if (yt && ytReady) playYouTube();
+  else preloadMusic();
+}
+
 let audio: HTMLAudioElement | null = null;
 let gain: GainNode | null = null;
 let ctx: AudioContext | null = null;
@@ -35,7 +150,7 @@ export function subscribeMusic(fn: () => void) {
 }
 
 export function getMusicState() {
-  return { playing: audio !== null, muted };
+  return { playing: audio !== null || ytPlaying, muted };
 }
 
 /** True when the browser honours volume assignments — false on iOS. */
@@ -83,7 +198,12 @@ function buildGraph(el: HTMLAudioElement): GainNode | null {
 
 /** Starts the invitation's track. Called from the tap that opens it. */
 export async function startMusic() {
-  if (audio || typeof window === "undefined") return;
+  if (typeof window === "undefined") return;
+  if (YT_ID) {
+    startYouTube();
+    return;
+  }
+  if (audio) return;
 
   const el = new Audio(MUSIC_SRC);
   el.loop = true;
@@ -138,6 +258,14 @@ export async function startMusic() {
  * zero does nothing on iOS.
  */
 export function toggleMute() {
+  if (YT_ID) {
+    if (!yt) return;
+    muted = !muted;
+    if (muted) yt.mute();
+    else yt.unMute();
+    emit();
+    return;
+  }
   if (!audio) return;
   muted = !muted;
   audio.muted = muted;

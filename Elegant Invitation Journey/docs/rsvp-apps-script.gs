@@ -1,5 +1,5 @@
 /**
- * RSVP receiver for the Lasya & Avyay invitation.
+ * RSVP receiver for the Ruthvika & Vivek invitation.
  *
  * Paste this into Apps Script on the RSVP spreadsheet, deploy it as a Web app,
  * and put the resulting /exec URL in the site's RSVP_WEBHOOK_URL environment
@@ -10,8 +10,11 @@
  * matters; the email is only the nudge.
  */
 
-/** Where the alert goes. Add more addresses separated by commas. */
-var NOTIFY = 'lasyaandavyay@gmail.com';
+/**
+ * Where the alert goes. CHANGE THIS to the address that should get an email for
+ * every RSVP. Add more addresses separated by commas.
+ */
+var NOTIFY = 'CHANGE-ME@gmail.com';
 
 var HEADERS = [
   'Received',
