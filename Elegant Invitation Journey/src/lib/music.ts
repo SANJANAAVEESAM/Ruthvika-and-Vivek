@@ -16,8 +16,12 @@
  * it is.
  */
 export const MUSIC_SRC = "/music/invitation.mp3";
-/** Where in the file to begin, and begin again on each loop: 0:38. */
-const LOCAL_START = 38;
+/**
+ * Where in the file to begin, and begin again on each loop. The file itself was
+ * cut to begin at 0:38 of the original recording, because phones often refuse
+ * to jump forward inside an audio file, so this stays 0.
+ */
+const LOCAL_START = 0;
 const TARGET_VOLUME = 0.3;
 const FADE_MS = 3500;
 
@@ -378,7 +382,7 @@ export async function startMusic() {
   gain = node;
   emit();
   dbg("local file: playing");
-  window.setTimeout(() => dbg(`3s later: t=${el.currentTime.toFixed(1)}s paused=${el.paused} muted=${el.muted}`), 3000);
+  window.setTimeout(() => dbg(`3s later: t=${el.currentTime.toFixed(1)}s of ${Number.isFinite(el.duration) ? el.duration.toFixed(0) : "?"}s paused=${el.paused} muted=${el.muted}`), 3000);
 
   const started = performance.now();
   const step = (now: number) => {
