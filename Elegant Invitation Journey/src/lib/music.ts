@@ -366,6 +366,34 @@ function prepareLocal(): HTMLAudioElement {
   return el;
 }
 
+let retryArmed = false;
+
+/**
+ * Android Chrome does not treat the moment a finger touches the screen as
+ * permission to play sound — only the moment it lifts. The first request, made
+ * on touch-down, is therefore refused there. When that happens, ask again on
+ * the next finger-lift or click, which is a gesture it accepts. Stops asking
+ * once the song is playing.
+ */
+function armRetry() {
+  if (retryArmed || typeof window === "undefined") return;
+  retryArmed = true;
+  const events = ["pointerup", "touchend", "click", "keydown"];
+  const go = () => {
+    if (audio) {
+      cleanup();
+      return;
+    }
+    dbg("asking again on finger-lift");
+    void startMusic();
+  };
+  const cleanup = () => {
+    events.forEach((e) => window.removeEventListener(e, go, true));
+    retryArmed = false;
+  };
+  events.forEach((e) => window.addEventListener(e, go, true));
+}
+
 /** Starts the invitation's track. Called from the tap that opens it. */
 export async function startMusic() {
   if (typeof window === "undefined") return;
@@ -400,6 +428,7 @@ export async function startMusic() {
     await el.play();
   } catch (err) {
     dbg(`!! play() refused: ${String(err)}`);
+    armRetry();
     emit();
     return;
   }
