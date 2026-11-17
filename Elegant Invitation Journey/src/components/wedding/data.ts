@@ -240,6 +240,7 @@ export const EVENT_DAYS: EventDay[] = [
           lead: "With the blessings of our families, we joyfully invite you to the wedding of",
           parties: [{ name: "Ruthvika" }, { name: "Vivek" }],
         },
+        liveUrl: "https://youtube.com/live/83fx4QbSl_s?feature=share",
         venue: {
           name: "Jogulamba Ammavari Temple",
           address: "Alampur, Gadwal, Telangana",
