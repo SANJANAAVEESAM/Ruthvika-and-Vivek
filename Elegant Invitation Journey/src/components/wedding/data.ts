@@ -260,6 +260,7 @@ export const EVENT_DAYS: EventDay[] = [
         name: "Reception",
         themeKey: "masquerade",
         time: "6:00 PM",
+        liveUrl: "https://youtube.com/live/EJu1WEGeN4g?feature=share",
         venue: {
           name: "D Convention & Hotel D'light",
           address: "Hunter Road, Warangal",
